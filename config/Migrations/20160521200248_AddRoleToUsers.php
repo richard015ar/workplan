@@ -1,7 +1,7 @@
 <?php
 use Migrations\AbstractMigration;
 
-class DeleteLastLoginFromAdministratorsAndEmployees extends AbstractMigration
+class AddRoleToUsers extends AbstractMigration
 {
     /**
      * Change Method.
@@ -11,9 +11,13 @@ class DeleteLastLoginFromAdministratorsAndEmployees extends AbstractMigration
      * @return void
      */
     public function change()
-    {       
-        $table = $this->table('employees');
-        $table->removeColumn('last_login');
+    {
+        $table = $this->table('users');
+        $table->addColumn('role_id', 'integer', [
+            'default' => null,
+            'limit' => 11,
+            'null' => false,
+        ]);
         $table->update();
     }
 }
