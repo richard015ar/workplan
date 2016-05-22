@@ -21,13 +21,21 @@ class UsersController extends AppController
 
     public function login()
     {
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
+
         if ($this->request->is('post')) {
             $user = $this->Auth->identify();
             if ($user) {
                 $this->Auth->setUser($user);
-                return $this->redirect($this->Auth->redirectUrl());
+                $response['message'] = 'User identified';
+                $response['user'] = $user;
             }
-            $this->Flash->error(__('Invalid username or password, try again'));
+            $response['message'] = 'Invalid username or password, try again';
+            $response['error'] = true;
+            $this->set('response');
         }
     }
 
@@ -73,18 +81,49 @@ class UsersController extends AppController
      */
     public function add()
     {
-        $user = $this->Users->newEntity();
-        if ($this->request->is('post')) {
-            $user = $this->Users->patchEntity($user, $this->request->data);
-            if ($this->Users->save($user)) {
-                $this->Flash->success(__('The user has been saved.'));
-                return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Flash->error(__('The user could not be saved. Please, try again.'));
+      // this is a return variable
+      $response = [
+        'message' => '',
+        'error' => false
+      ];
+      $user = $this->Users->newEntity();
+      if ($this->request->is('post')) {
+          $this->request->data['role'] = intval($this->request->data['role']);
+
+        // Creating entities
+        $employee = $this->Users->Employees->newEntity();
+        $administrator = $this->Users->Administrators->newEntity();
+        $user = $this->Users->patchEntity($user, $this->request->data);
+        if ($this->Users->save($user)) {
+            $response['user'] = $user;
+            if ($this->request->data['role'] == 1) {
+                $administratorData['user_id'] = $user->id;
+                $administrator = $this->Users->Administrators->patchEntity($administrator, $administratorData);
+                if ($this->Users->Administrators->save($administrator)) {
+                    $response['message'] = 'The user has been saved.';
+                    $response['administrator'] = $administrator;
+                    $this->set(compact('response'));
+                    return;
+                }
+              }
+              if ($this->request->data['role'] == 2) {
+                $employeeData['user_id'] = $user->id;
+                $employeeData['charge'] = 'Developer';
+                $employee = $this->Users->Employees->patchEntity($employee, $employeeData);
+                //debug($employee);
+                if ($this->Users->Employees->save($employee)) {
+                    $response['message'] = 'The user has been saved.';
+                    $response['employee'] = $employee;
+                    $this->set(compact('response'));
+                    return;
+                }
+              }
             }
+            $response['error'] = true;
+            $response['message'] = 'Error saving user';
+            $this->set(compact('response'));
+            return;
         }
-        $this->set(compact('user'));
-        $this->set('_serialize', ['user']);
     }
 
     /**
