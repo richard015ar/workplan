@@ -110,7 +110,7 @@ class UsersController extends AppController
                 $employeeData['user_id'] = $user->id;
                 $employeeData['charge'] = 'Developer';
                 $employee = $this->Users->Employees->patchEntity($employee, $employeeData);
-                debug($employee);
+                //debug($employee);
                 if ($this->Users->Employees->save($employee)) {
                     $response['message'] = 'The user has been saved.';
                     $response['employee'] = $employee;
@@ -123,7 +123,7 @@ class UsersController extends AppController
             $response['message'] = 'Error saving user';
             $this->set(compact('response'));
             return;
-        } 
+        }
     }
 
     /**
