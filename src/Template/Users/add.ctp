@@ -24,7 +24,9 @@
             echo $this->Form->input('email');
             echo $this->Form->input('last_login');
             echo $this->Form->input('full_name');
-            echo $this->Form->input('role_id');
+            echo $this->Form->input('role', [
+                'options' => [1 => 'Administrator', 2 => 'Employee']
+            ]);
         ?>
     </fieldset>
     <?= $this->Form->button(__('Submit')) ?>
