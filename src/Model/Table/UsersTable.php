@@ -10,7 +10,6 @@ use Cake\Validation\Validator;
 /**
  * Users Model
  *
- * @property \Cake\ORM\Association\BelongsTo $Roles
  * @property \Cake\ORM\Association\HasMany $Administrators
  * @property \Cake\ORM\Association\HasMany $Employees
  * @property \Cake\ORM\Association\HasMany $NoteEmployees
@@ -36,10 +35,6 @@ class UsersTable extends Table
 
         $this->addBehavior('Timestamp');
 
-        $this->belongsTo('Roles', [
-            'foreignKey' => 'role_id',
-            'joinType' => 'INNER'
-        ]);
         $this->hasMany('Administrators', [
             'foreignKey' => 'user_id'
         ]);
@@ -91,6 +86,13 @@ class UsersTable extends Table
             ->requirePresence('full_name', 'create')
             ->notEmpty('full_name');
 
+        $validator
+            ->notEmpty('role', 'A role is required')
+            ->add('role', 'inList', [
+                'rule' => ['inList', [1, 2]], // 1 = Admin role, 2 =  Employee role
+                'message' => 'Please enter a valid role'
+            ]);
+
         return $validator;
     }
 
@@ -104,8 +106,7 @@ class UsersTable extends Table
     public function buildRules(RulesChecker $rules)
     {
         $rules->add($rules->isUnique(['username']));
-        $rules->add($rules->isUnique(['email']));
-        $rules->add($rules->existsIn(['role_id'], 'Roles'));
+        $rules->add($rules->isUnique(['email']));        
         return $rules;
     }
 }

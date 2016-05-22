@@ -43,6 +43,22 @@ class AppController extends Controller
 
         $this->loadComponent('RequestHandler');
         $this->loadComponent('Flash');
+
+        // Auth component
+        $this->loadComponent('Auth', [
+            'loginRedirect' => [
+                'controller' => 'Employees',
+                'action' => 'index'
+            ],
+            'logoutRedirect' => [
+                'controller' => 'Users',
+                'action' => 'login',
+                'home'
+            ]
+        ]);
+
+        // Request Handler component
+        $this->loadComponent('RequestHandler');
     }
 
     /**
@@ -53,6 +69,8 @@ class AppController extends Controller
      */
     public function beforeRender(Event $event)
     {
+        // Don't require login for:
+        $this->Auth->allow(['index', 'view', 'display']); // actions allowed for ALL controllers
         if (!array_key_exists('_serialize', $this->viewVars) &&
             in_array($this->response->type(), ['application/json', 'application/xml'])
         ) {
