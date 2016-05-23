@@ -16,15 +16,13 @@ class PlansController extends AppController
      *
      * @return \Cake\Network\Response|null
      */
-    public function index()
+    public function index($id = null)
     {
-        $this->paginate = [
-            'contain' => ['Employees']
-        ];
+        $plan = $this->Plans->getEmployeeByPlans($id);
+
         $plans = $this->paginate($this->Plans);
 
-        $this->set(compact('plans'));
-        $this->set('_serialize', ['plans']);
+        $this->set(compact('plans', 'plan'));
     }
 
     /**
@@ -51,19 +49,27 @@ class PlansController extends AppController
      */
     public function add()
     {
+        // this is a return variable
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
         $plan = $this->Plans->newEntity();
         if ($this->request->is('post')) {
             $plan = $this->Plans->patchEntity($plan, $this->request->data);
             if ($this->Plans->save($plan)) {
-                $this->Flash->success(__('The plan has been saved.'));
-                return $this->redirect(['action' => 'index']);
+                $response['message'] = 'The plan has been saved.';
+                $response['plan'] = $plan;
+                $this->set(compact('response'));
+                return;
             } else {
-                $this->Flash->error(__('The plan could not be saved. Please, try again.'));
+                $response['message'] = 'error. The plan not has been saved.';
+                $response['error'] = true;
+                $this->set(compact('response'));
+                return;
             }
         }
-        $employees = $this->Plans->Employees->find('list', ['limit' => 200]);
-        $this->set(compact('plan', 'employees'));
-        $this->set('_serialize', ['plan']);
+        $this->set('response');
     }
 
     /**
@@ -75,21 +81,29 @@ class PlansController extends AppController
      */
     public function edit($id = null)
     {
+        // this is a return variable
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
         $plan = $this->Plans->get($id, [
             'contain' => []
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $plan = $this->Plans->patchEntity($plan, $this->request->data);
             if ($this->Plans->save($plan)) {
-                $this->Flash->success(__('The plan has been saved.'));
-                return $this->redirect(['action' => 'index']);
+                $response['message'] = 'The plan has been saved.';
+                $response['plan'] = $plan;
+                $this->set(compact('response'));
+                return;
             } else {
-                $this->Flash->error(__('The plan could not be saved. Please, try again.'));
+                $response['message'] = 'error. The plan not has been saved.';
+                $response['error'] = true;
+                $this->set(compact('response'));
+                return;
             }
         }
-        $employees = $this->Plans->Employees->find('list', ['limit' => 200]);
-        $this->set(compact('plan', 'employees'));
-        $this->set('_serialize', ['plan']);
+        $this->set('response');
     }
 
     /**
@@ -101,13 +115,23 @@ class PlansController extends AppController
      */
     public function delete($id = null)
     {
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
         $this->request->allowMethod(['post', 'delete']);
         $plan = $this->Plans->get($id);
         if ($this->Plans->delete($plan)) {
-            $this->Flash->success(__('The plan has been deleted.'));
+            $response['message'] = 'The plan has been deleted.';
+            $response['plan'] = $plan;
+            $this->set(compact('response'));
+            return;
         } else {
-            $this->Flash->error(__('The plan could not be deleted. Please, try again.'));
+            $response['message'] = 'The plan could not be deleted. Please, try again.';
+            $response['error'] = true;
+            $this->set(compact('response'));
+            return;
         }
-        return $this->redirect(['action' => 'index']);
+        $this->set('response');
     }
 }

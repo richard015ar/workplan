@@ -77,4 +77,15 @@ class PlansTable extends Table
         $rules->add($rules->existsIn(['employee_id'], 'Employees'));
         return $rules;
     }
+    public function getEmployeeByPlans($id)
+    {
+        $list = $this->find()
+        ->contain([
+        'Employees' => function ($q) use ($id) {
+            return $q->where(['Plans.employee_id' => $id]);
+        }
+    ]);
+    //->order(['created' => 'DESC']);
+        return $list;
+    }
 }

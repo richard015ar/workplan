@@ -1,7 +1,7 @@
 <?php
 use Migrations\AbstractMigration;
 
-class AddFullNameToUsers extends AbstractMigration
+class AddAvatarUsers extends AbstractMigration
 {
     /**
      * Change Method.
@@ -13,7 +13,7 @@ class AddFullNameToUsers extends AbstractMigration
     public function change()
     {
         $table = $this->table('users');
-        $table->addColumn('full_name', 'string', [
+        $table->addColumn('avatar_url', 'string', [
             'default' => null,
             'limit' => 255,
             'null' => false,
