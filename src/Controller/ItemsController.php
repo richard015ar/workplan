@@ -16,15 +16,12 @@ class ItemsController extends AppController
      *
      * @return \Cake\Network\Response|null
      */
-    public function index()
+    public function items($id = null)
     {
-        $this->paginate = [
-            'contain' => ['Plans']
-        ];
+        $item = $this->Items->getItemsByPlan($id);
         $items = $this->paginate($this->Items);
 
-        $this->set(compact('items'));
-        $this->set('_serialize', ['items']);
+        $this->set(compact('items', 'item'));
     }
 
     /**
@@ -51,19 +48,26 @@ class ItemsController extends AppController
      */
     public function add()
     {
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
         $item = $this->Items->newEntity();
         if ($this->request->is('post')) {
             $item = $this->Items->patchEntity($item, $this->request->data);
             if ($this->Items->save($item)) {
-                $this->Flash->success(__('The item has been saved.'));
-                return $this->redirect(['action' => 'index']);
+                $response['message'] = 'The item has been saved.';
+                $response['item'] = $item;
+                $this->set(compact('response'));
+                return;
             } else {
-                $this->Flash->error(__('The item could not be saved. Please, try again.'));
+                $response['message'] = 'The item could not be saved. Please, try again.';
+                $response['error'] = true;
+                $this->set(compact('response'));
+                return;
             }
         }
-        $plans = $this->Items->Plans->find('list', ['limit' => 200]);
-        $this->set(compact('item', 'plans'));
-        $this->set('_serialize', ['item']);
+        $this->set('response');
     }
 
     /**
@@ -75,21 +79,28 @@ class ItemsController extends AppController
      */
     public function edit($id = null)
     {
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
         $item = $this->Items->get($id, [
             'contain' => []
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $item = $this->Items->patchEntity($item, $this->request->data);
             if ($this->Items->save($item)) {
-                $this->Flash->success(__('The item has been saved.'));
-                return $this->redirect(['action' => 'index']);
+                $response['message'] = 'The item has been saved.';
+                $response['item'] = $item;
+                $this->set(compact('response'));
+                return;
             } else {
-                $this->Flash->error(__('The item could not be saved. Please, try again.'));
+                $response['message'] = 'The item could not be saved. Please, try again.';
+                $response['error'] = true;
+                $this->set(compact('response'));
+                return;
             }
         }
-        $plans = $this->Items->Plans->find('list', ['limit' => 200]);
-        $this->set(compact('item', 'plans'));
-        $this->set('_serialize', ['item']);
+        $this->set('response');
     }
 
     /**
@@ -101,12 +112,22 @@ class ItemsController extends AppController
      */
     public function delete($id = null)
     {
+            $response = [
+              'message' => '',
+              'error' => false
+            ];
         $this->request->allowMethod(['post', 'delete']);
         $item = $this->Items->get($id);
         if ($this->Items->delete($item)) {
-            $this->Flash->success(__('The item has been deleted.'));
+            $response['message'] = 'The item has been deleted.';
+            $response['item'] = $item;
+            $this->set(compact('response'));
+            return;
         } else {
-            $this->Flash->error(__('The item could not be deleted. Please, try again.'));
+            $response['message'] = 'The item could not be deleted. Please, try again.';
+            $response['error'] = true;
+            $this->set(compact('response'));
+            return;
         }
         return $this->redirect(['action' => 'index']);
     }

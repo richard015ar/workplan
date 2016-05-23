@@ -77,4 +77,17 @@ class ItemsTable extends Table
         $rules->add($rules->existsIn(['plan_id'], 'Plans'));
         return $rules;
     }
+
+    public function getItemsByPlan($id)
+    {
+        $itemList = $this->find()
+        ->contain([
+        'Plans' => function ($q) use ($id) {
+            return $q->where(['Items.plan_id' => $id]);
+        }
+    ]);
+     //->where(['state =' => 2]);
+    //->order(['created' => 'DESC']);
+        return $itemList;
+    }
 }
