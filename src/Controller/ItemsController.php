@@ -131,4 +131,37 @@ class ItemsController extends AppController
         }
         return $this->redirect(['action' => 'index']);
     }
+
+    /*
+    This action retrieve all items for an employee between two dates
+    and with order and search term (no required) and state of item (no required)
+    // ADD PARAMS HERE!
+    */
+    public function employeeItems() {
+        $response = [
+            'error' => true,
+            'message' => ''
+        ];
+        if (!$this->request->is('get')) {
+            $response['message'] = 'Invalid request';
+            $this->set(compact('response'));
+            return;
+        }
+        $startDate = $this->request->query('startDate');
+        $endDate = $this->request->query('endDate');
+        $searchTerm = $this->request->query('searchTerm');
+        $order = $this->request->query('order');
+        $stateItem = $this->request->query('state');
+        $employeeId = $this->Items->Plans->Employees->getIdByUserId($this->Auth->user('id'));
+        $items = $this->Items->getItemsByEmployeeId($startDate, $endDate, $order, $stateItem, $searchTerm, $employeeId);
+        if (!$items)  {
+            $response['message'] = 'All fields must be fill';
+            $this->set(compact('response'));
+            return;
+        }
+        $response['error'] = false;
+        $response['items'] = $items;
+        $this->set(compact('response'));
+        return;
+    }
 }

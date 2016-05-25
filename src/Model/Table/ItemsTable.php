@@ -88,4 +88,34 @@ class ItemsTable extends Table
         ->order(['created' => 'DESC']);
         return $itemList;
     }
+
+    public function getItemsByEmployeeId($startDate, $endDate, $order, $stateItem = null, $searchTerm = null, $employeeId) {
+        if (is_null($startDate) || is_null($endDate) || is_null($order) || is_null($employeeId)) {
+            $response['message'] = 'All data must be filled';
+            return false;
+        }
+        if (!is_null($searchTerm)) {
+            $items = $this->find()->where(['Items.description LIKE' => "%$searchTerm%"]);
+            $items = $items->where(function ($exp, $q) use ($startDate, $endDate) {
+                return $exp->between('Items.created', $startDate, $endDate);
+            });
+            $items = $items->contain(['Plans'  => function ($q) use ($employeeId) {
+                return $q->where(['Plans.employee_id' => $employeeId]);
+            }]);
+            $items = $items->order(['Plans.created' => $order]);
+        } else {
+            $items = $this->find()->contain(['Plans'  => function ($q) use ($employeeId) {
+                return $q->where(['Plans.employee_id' => $employeeId]);
+            }])
+            ->where(function ($exp, $q) use ($startDate, $endDate) {
+                return $exp->between('Items.created', $startDate, $endDate);
+            })
+            ->order(['Plans.created' => $order]);
+        }
+        if (!is_null($stateItem)) {
+            $stateItem = intval($stateItem);
+            $items = $items->where(['Items.state' => $stateItem]);
+        }
+        return $items;
+    }
 }

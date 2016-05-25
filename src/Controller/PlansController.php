@@ -134,6 +134,11 @@ class PlansController extends AppController
         }
         $this->set('response');
     }
+
+    /*
+    This action add a new plan with their items.
+    This action is thinking for the begining of day
+    */
     public function addPlan()
     {
         // this is a return variable
@@ -171,6 +176,97 @@ class PlansController extends AppController
             $this->set(compact('response'));
             return;
         }
+    }
+
+    /*
+    This action if for close the plan (to final of the day).
+    The employee close the plan changing each state of item and he con
+    add new items. This items is added because in the day he will make new tasks.
+    The plan ID is by POST.
+
+    POST = {
+        'plan_id' : 144,
+        "items": [
+              {
+                "plan_id": 12,
+                "state": 2,
+                "description": "Meeting with Julio",
+                "created": "2016-05-25T18:23:30+0000",
+                "modified": "2016-05-25T18:23:30+0000",
+                "id": 15
+              },
+              {
+                "plan_id": 12,
+                "state": 1,
+                "description": "New controllers for real time panel",
+                "created": "2016-05-25T18:23:30+0000",
+                "modified": "2016-05-25T18:23:30+0000",
+                "id": 16
+              }
+         ],
+        'newItems' : [
+                {
+                    description: 'Meeting with Hector',
+                    state : 1
+                },
+                {
+                    description: 'Fixing bugs in production',
+                    state : 2
+                },
+        ]
+    }
+    */
+    public function closePlan() {
+        $response = [
+            'error' => false,
+            'message' => ''
+        ];
+        $planId = intval($this->request->data['plan_id']);
+        if ($planId == 0) {
+            $response['error'] = true;
+            $response['message'] = 'You must send the plan_id field.';
+            $this->set(compact('response'));
+            return;
+        }
+        // Change state of plan
+        $employeeId = $this->Plans->Employees->getIdByUserId($this->Auth->user('id'));
+        $plan = $this->Plans->get($planId);
+        if ($plan->employee_id != $employeeId) {
+            $response['error'] = true;
+            $response['message'] = "You don't authorized change this plan.";
+            $this->set(compact('response'));
+            return;
+        }
+        $plan->state = 2;
+        $this->Plans->save($plan);
+        $response['plan'] = $plan;
+
+        // We need change each state of current items
+        foreach ($this->request->data['items'] as $item) {
+            $itemEntity = $this->Plans->Items->newEntity();
+            $itemEntity = $this->Plans->Items->patchEntity($itemEntity, $item);
+            $itemEntity->modified = date('Y-m-d H:i:s');
+            $this->Plans->Items->save($itemEntity);
+            $response['items'][] = $itemEntity;
+        }
+
+        // Add new items
+        if (
+            $this->request->data['newItems'] &&
+            count($this->request->data['newItems']) > 0
+        ) {
+            foreach ($this->request->data['newItems'] as $newItem) {
+                $itemEntity = $this->Plans->Items->newEntity();
+                $itemsData['plan_id'] = $planId;
+                $itemsData['state'] = $newItem['state'];
+                $itemsData['description'] = $newItem['description'];
+                $itemEntity = $this->Plans->Items->patchEntity($itemEntity, $itemsData);
+                $this->Plans->Items->save($itemEntity);
+                $response['newItems'][] = $itemEntity;
+            }
+        }
+        $this->set(compact('response'));
+        return;
     }
 
     /*
