@@ -76,4 +76,29 @@ class EmployeesTable extends Table
         $rules->add($rules->existsIn(['user_id'], 'Users'));
         return $rules;
     }
+
+    public function getListEmployess($employeeId)
+    {
+        $list = $this->find()->contain([
+             'Users', 'Plans' => function ($q) {
+               return $q->where(['DAY(Plans.created) = DAY(NOW())-1']);
+             }
+         ])
+         ->where(['Employees.id' => $employeeId]);
+        //debug($list->toArray());
+        return $list;
+    }
+    public function getPlans($starDate, $endDate, $order, $searchTerm, $userId)
+    {
+        $list = $this->find()->contain([
+             'Users', 'Plans.Items' => function ($exp,$q) use($userId){
+               return $q->where(['Plans.employee_id' => $userId]);
+               return $exp->between($starDate, $endDate);
+             }
+           ])
+           ->where(['Plans.Items.description LIKE' => "%$searchTerm%"])
+           ->order(['Plans.created' => $order]);
+        debug($list->toArray());
+        return $list;
+    }
 }

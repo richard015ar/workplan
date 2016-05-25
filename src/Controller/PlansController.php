@@ -134,4 +134,34 @@ class PlansController extends AppController
         }
         $this->set('response');
     }
+    public function addPlan()
+    {
+        // this is a return variable
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
+        // this is a return variable
+        $plan = $this->Plans->newEntity();//add plan
+        if ($this->request->is('post')) {
+        $employeeData['employee_id'] = $this->Auth->user('employee_id');
+        $employeeData['state'] = '1';
+        $plan = $this->Plans->patchEntity($plan, $employeeData);
+        if ($this->Plans->save($plan)) {//save items
+                foreach($this->request->data['Items'] as $item) {
+                    $itemEntity = $this->Plans->Items->newEntity();
+                    $itemsData['plan_id'] = $plan->id;
+                    $itemsData['state'] = '1';
+                    $itemsData['description'] = $item['description'];
+                    $itemEntity = $this->Plams->Items->patchEntity($itemEntity, $itemsData);
+                    $this->Plans->Items->save($itemEntity);
+                }
+
+            }
+            $response['error'] = true;
+            $response['message'] = 'error. The plan not has been saved.';
+            $this->set(compact('response'));
+            return;
+        }
+    }
 }

@@ -79,13 +79,11 @@ class PlansTable extends Table
     }
     public function getEmployeeByPlans($id)
     {
-        $list = $this->find()
-        ->contain([
+        $list = $this->find()->contain([
         'Employees' => function ($q) use ($id) {
             return $q->where(['Plans.employee_id' => $id]);
-        }
-    ]);
-    //->order(['created' => 'DESC']);
+        }])
+        ->order(['created' => 'DESC']);
         return $list;
     }
 }

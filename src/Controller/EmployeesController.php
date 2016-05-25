@@ -18,13 +18,10 @@ class EmployeesController extends AppController
      */
     public function index()
     {
-        $this->paginate = [
-            'contain' => ['Users']
-        ];
-        $employees = $this->paginate($this->Employees);
+        $employees = $this->Employees->getListEmployess($this->Auth->user('employee_id'));
+        $employee = $this->paginate($this->Employees);
 
-        $this->set(compact('employees'));
-        $this->set('_serialize', ['employees']);
+        $this->set(compact('employees', 'employee'));
     }
 
     /**
@@ -109,5 +106,14 @@ class EmployeesController extends AppController
             $this->Flash->error(__('The employee could not be deleted. Please, try again.'));
         }
         return $this->redirect(['action' => 'index']);
+    }
+
+    public function dashwork($starDate, $endDate, $order, $searchTerm = null, $userId)
+    {
+        if($this->Auth->user('id')){
+            $employees = $this->Employees->getPlans($starDate, $endDate, $order, $searchTerm, $this->Auth->user('id'));
+            return;
+            $this->set(compact('employees'));
+        }
     }
 }

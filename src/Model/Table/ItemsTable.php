@@ -80,14 +80,12 @@ class ItemsTable extends Table
 
     public function getItemsByPlan($id)
     {
-        $itemList = $this->find()
-        ->contain([
+        $itemList = $this->find()->contain([
         'Plans' => function ($q) use ($id) {
             return $q->where(['Items.plan_id' => $id]);
-        }
-    ]);
-     //->where(['state =' => 2]);
-    //->order(['created' => 'DESC']);
+        }])
+        ->where(['state =' => 2])
+        ->order(['created' => 'DESC']);
         return $itemList;
     }
 }

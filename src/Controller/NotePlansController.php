@@ -112,4 +112,27 @@ class NotePlansController extends AppController
         }
         return $this->redirect(['action' => 'index']);
     }
+
+    public function NotePlansAdd($id = null)//hacer un addPlan, el add primero
+    {
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
+        $notePlan = $this->NotePlans->newEntity();
+        if ($this->request->is('post')) {
+            $notePlan = $this->NotePlans->patchEntity($notePlan, $this->request->data);
+            if ($this->NotePlans->save($notePlan)) {
+                $response['message'] = 'The note plan has been saved.';
+                $response['notePlan'] = $notePlan;
+                $this->set(compact('response'));
+                return;
+            }
+        }
+        $response['error'] = true;
+        $response['message'] = 'The note plan could not be saved. Please, try again.';
+        $this->set(compact('response'));
+        return;
+        //$this->set(compact('response'));
+    }
 }
