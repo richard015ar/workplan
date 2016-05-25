@@ -10,6 +10,13 @@ use App\Controller\AppController;
  */
 class ItemsController extends AppController
 {
+    // Paginate configuration
+    public $paginate = [
+        'limit' => 2,
+        'order' => [
+            'Items.created' => 'asc'
+        ]
+    ];
 
     /**
      * Index method
@@ -147,12 +154,17 @@ class ItemsController extends AppController
             $this->set(compact('response'));
             return;
         }
+        //debug($this->paginate);die();
         $startDate = $this->request->query('startDate');
         $endDate = $this->request->query('endDate');
         $searchTerm = $this->request->query('searchTerm');
         $order = $this->request->query('order');
         $stateItem = $this->request->query('state');
         $employeeId = $this->Items->Plans->Employees->getIdByUserId($this->Auth->user('id'));
+        $limit = $this->request->query('limit');
+        if (!$limit) {
+            $limit = 10;
+        }
         $items = $this->Items->getItemsByEmployeeId($startDate, $endDate, $order, $stateItem, $searchTerm, $employeeId);
         if (!$items)  {
             $response['message'] = 'All fields must be fill';
@@ -160,7 +172,11 @@ class ItemsController extends AppController
             return;
         }
         $response['error'] = false;
-        $response['items'] = $items;
+        $config = [
+            'limit' => $limit,
+        ];
+        $response['items'] = $this->Paginator->paginate($items, $config);
+        $response['total'] = count($response['items']);
         $this->set(compact('response'));
         return;
     }

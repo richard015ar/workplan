@@ -67,6 +67,8 @@ class AppController extends Controller
 
         // Request Handler component
         $this->loadComponent('RequestHandler');
+
+        $this->loadComponent('Paginator');
     }
 
     /**
