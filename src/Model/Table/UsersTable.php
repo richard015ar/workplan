@@ -6,6 +6,9 @@ use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\Event\Event;
+use Cake\Auth\DefaultPasswordHasher;
+use Cake\Utility\Text;
 
 /**
  * Users Model
@@ -18,7 +21,25 @@ use Cake\Validation\Validator;
  */
 class UsersTable extends Table
 {
+    /**
+    Before save action
+    */
+    public function beforeSave(Event $event)
+    {
+        $entity = $event->data['entity'];
 
+        if ($entity->isNew()) {
+            $hasher = new DefaultPasswordHasher();
+
+            // Generate an API 'token'
+            $entity->api_key_plain = sha1(Text::uuid());
+
+            // Bcrypt the token so BasicAuthenticate can check
+            // it during login.
+            $entity->api_key = $hasher->hash($entity->api_key_plain);
+        }
+        return true;
+    }
     /**
      * Initialize method
      *
@@ -109,5 +130,21 @@ class UsersTable extends Table
         $rules->add($rules->isUnique(['email']));
         return $rules;
     }
-    
+
+    /*
+    This function get a User by Username and Password (plain)
+    */
+    public function getUserByUsernameAndPassword($username, $password) {
+        if (is_null($username) || is_null($password)) {
+            return false;
+        }
+        $user = $this->find()
+                ->where(['Users.username' => $username]);
+        $user = $user->toArray();
+        if ((new DefaultPasswordHasher)->check($password, $user[0]->password)) {
+            return $user;
+        }
+        return false;
+    }
+
 }

@@ -16,7 +16,7 @@ class UsersController extends AppController
     public function beforeFilter(Event $event)
     {
        parent::beforeFilter($event);
-       $this->Auth->allow(['add', 'logout']);
+       $this->Auth->allow(['add', 'logout', 'login']);
     }
 
     public function login()
@@ -25,22 +25,27 @@ class UsersController extends AppController
           'message' => '',
           'error' => false
         ];
-
         if ($this->request->is('post')) {
-            $user = $this->Auth->identify();
-            if ($user) {
-                $this->Auth->setUser($user);
+            // $user = $this->Auth->identify();
+            $username = $this->request->data['username'];
+            $password = $this->request->data['password'];
+            $realUser = $this->Users->getUserByUsernameAndPassword($username, $password);
+            if ($realUser) {
+                $this->Auth->setUser($realUser);
                 $response['message'] = 'User identified';
-                $response['user'] = $user;
+                $response['user'] = $realUser;
+                $this->set(compact('response'));
+                return;
             }
             $response['message'] = 'Invalid username or password, try again';
             $response['error'] = true;
-            $this->set('response');
+            $this->set(compact('response'));
         }
     }
 
     public function logout()
     {
+        $this->Auth->logout();
         return $this->redirect($this->Auth->logout());
     }
 

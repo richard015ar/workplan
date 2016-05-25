@@ -144,24 +144,64 @@ class PlansController extends AppController
         // this is a return variable
         $plan = $this->Plans->newEntity();//add plan
         if ($this->request->is('post')) {
-        $employeeData['employee_id'] = $this->Auth->user('employee_id');
-        $employeeData['state'] = '1';
-        $plan = $this->Plans->patchEntity($plan, $employeeData);
+        $employeeId = $this->Plans->Employees->getIdByUserId($this->Auth->user('id'));
+        $planData['employee_id'] = $employeeId;
+        $planData['state'] = 1;
+        $plan = $this->Plans->patchEntity($plan, $planData);
         if ($this->Plans->save($plan)) {//save items
-                foreach($this->request->data['Items'] as $item) {
+                // this is a return variable
+                $itemToReturn = [];
+                foreach($this->request->data['items'] as $item) {
                     $itemEntity = $this->Plans->Items->newEntity();
                     $itemsData['plan_id'] = $plan->id;
-                    $itemsData['state'] = '1';
-                    $itemsData['description'] = $item['description'];
-                    $itemEntity = $this->Plams->Items->patchEntity($itemEntity, $itemsData);
-                    $this->Plans->Items->save($itemEntity);
+                    $itemsData['state'] = 1;
+                    $itemsData['description'] = $item[0]['description'];
+                    $itemEntity = $this->Plans->Items->patchEntity($itemEntity, $itemsData);
+                    if ($this->Plans->Items->save($itemEntity)) {
+                        $itemToReturn[] = $itemEntity;
+                    }
                 }
-
+                $response['plan'] = $plan;
+                $response['items'] = $itemToReturn;
+                $this->set(compact('response'));
+                return;
             }
             $response['error'] = true;
             $response['message'] = 'error. The plan not has been saved.';
             $this->set(compact('response'));
             return;
         }
+    }
+
+    /*
+    This action retrieve all plans for an employee between two dates
+    and with order and search term (no required)
+    // ADD PARAMS HERE!
+    */
+    public function employeePlans() {
+        $response = [
+            'error' => true,
+            'message' => ''
+        ];
+        if (!$this->request->is('get')) {
+            $response['message'] = 'Invalid request';
+            $this->set(compact('response'));
+            return;
+        }
+        $startDate = $this->request->query('startDate');
+        $endDate = $this->request->query('endDate');
+        $searchTerm = $this->request->query('searchTerm');
+        $order = $this->request->query('order');
+        $employeeId = $this->Plans->Employees->getIdByUserId($this->Auth->user('id'));
+        $plans = $this->Plans->getPlansByEmployeeId($startDate, $endDate, $order, $searchTerm, $employeeId);
+        if (!$plans)  {
+            $response['message'] = 'All fields must be fill';
+            $this->set(compact('response'));
+            return;
+        }
+        $response['error'] = false;
+        $response['plans'] = $plans;
+        $this->set(compact('response'));
+        return;
     }
 }

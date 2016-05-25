@@ -77,13 +77,42 @@ class PlansTable extends Table
         $rules->add($rules->existsIn(['employee_id'], 'Employees'));
         return $rules;
     }
-    public function getEmployeeByPlans($id)
+
+    /*
+    A list of plans by employee ID. We need a start/end dates, and a order
+    for return a result list.
+    A search term can be null.
+    * @param startDate DateTime string
+    * @param endDate DateTime string
+    * @param order String. This can be 'ASC' or 'DESC'
+    * @param searchTerm String. Term for search a 'description' field of Item entity
+    * @param employeeId Integer. 'employee_id' field of Employee Entity.
+    */
+    public function getPlansByEmployeeId($startDate, $endDate, $order, $searchTerm = null, $employeeId)
     {
-        $list = $this->find()->contain([
-        'Employees' => function ($q) use ($id) {
-            return $q->where(['Plans.employee_id' => $id]);
-        }])
-        ->order(['created' => 'DESC']);
-        return $list;
+        if (is_null($startDate) || is_null($endDate) || is_null($order) || is_null($employeeId)) {
+            $response['message'] = 'All data must be filled';
+            return false;
+        }
+        if ($searchTerm != '' || !is_null($searchTerm)) {
+            $plans = $this->find()->contain([
+                 'Items' => function ($q) use($searchTerm){
+                   return $q->where(['Items.description LIKE' => "%$searchTerm%"]);
+                 }
+             ]);
+               $plans = $plans->where(function ($exp, $q) use ($startDate, $endDate) {
+                    return $exp->between('Plans.created', $startDate, $endDate);
+                });
+               $plans = $plans->where(['Plans.employee_id' => $employeeId])
+               ->order(['Plans.created' => $order]);
+        } else {
+            $plans = $this->find()->contain(['Items'])
+               ->where(function ($exp, $q) use ($startDate, $endDate){
+                    return $exp->between('Plans.created', $startDate, $endDate);
+                })
+               ->andWhere(['Plans.employee_id' => $employeeId])
+               ->order(['Plans.created' => $order]);
+        }
+        return $plans;
     }
 }

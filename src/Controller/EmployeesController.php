@@ -107,13 +107,4 @@ class EmployeesController extends AppController
         }
         return $this->redirect(['action' => 'index']);
     }
-
-    public function dashwork($starDate, $endDate, $order, $searchTerm = null, $userId)
-    {
-        if($this->Auth->user('id')){
-            $employees = $this->Employees->getPlans($starDate, $endDate, $order, $searchTerm, $this->Auth->user('id'));
-            return;
-            $this->set(compact('employees'));
-        }
-    }
 }

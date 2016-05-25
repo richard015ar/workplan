@@ -88,17 +88,17 @@ class EmployeesTable extends Table
         //debug($list->toArray());
         return $list;
     }
-    public function getPlans($starDate, $endDate, $order, $searchTerm, $userId)
-    {
-        $list = $this->find()->contain([
-             'Users', 'Plans.Items' => function ($exp,$q) use($userId){
-               return $q->where(['Plans.employee_id' => $userId]);
-               return $exp->between($starDate, $endDate);
-             }
-           ])
-           ->where(['Plans.Items.description LIKE' => "%$searchTerm%"])
-           ->order(['Plans.created' => $order]);
-        debug($list->toArray());
-        return $list;
+
+    /*
+    Return ID by User ID
+    */
+    public function getIdByUserId($userId) {
+        $userId = intval($userId);
+        if ($userId == 0) {
+            return false;
+        }
+        $employee = $this->find()->where(['user_id' => $userId]);
+        $employee = $employee->toArray();
+        return $employee[0]->id;
     }
 }

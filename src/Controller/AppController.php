@@ -46,6 +46,14 @@ class AppController extends Controller
 
         // Auth component
         $this->loadComponent('Auth', [
+            'authenticate' => [
+                'Basic' => [
+                   'fields' => ['username' => 'username', 'password' => 'api_key'],
+                   'userModel' => 'Users'
+                ],
+            ],
+            'storage' => 'Memory',
+            'unauthorizedRedirect' => false,
             'loginRedirect' => [
                 'controller' => 'Employees',
                 'action' => 'index'
@@ -70,7 +78,7 @@ class AppController extends Controller
     public function beforeRender(Event $event)
     {
         // Don't require login for:
-        $this->Auth->allow(['index', 'view', 'display']); // actions allowed for ALL controllers
+        //$this->Auth->allow(['login']); // actions allowed for ALL controllers
         if (!array_key_exists('_serialize', $this->viewVars) &&
             in_array($this->response->type(), ['application/json', 'application/xml'])
         ) {
