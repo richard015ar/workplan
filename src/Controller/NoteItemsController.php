@@ -10,7 +10,13 @@ use App\Controller\AppController;
  */
 class NoteItemsController extends AppController
 {
-
+    // Paginate configuration
+    public $paginate = [
+        'limit' => 2,
+        'order' => [
+            'NoteItems.created' => 'asc'
+        ]
+    ];
     /**
      * Index method
      *
@@ -49,22 +55,33 @@ class NoteItemsController extends AppController
      *
      * @return \Cake\Network\Response|void Redirects on successful add, renders view otherwise.
      */
-    public function add()
+    public function addNoteItem()
     {
+        // this is a return variable
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
+        // this is a return variable
         $noteItem = $this->NoteItems->newEntity();
         if ($this->request->is('post')) {
-            $noteItem = $this->NoteItems->patchEntity($noteItem, $this->request->data);
+            $userId = $this->Auth->user('id');
+            $noteData['user_id'] = $userId;
+            $noteData['item_id'] = $this->request->data['item_id'];
+            $noteData['note'] = $this->request->data['note'];
+            $noteItem = $this->NoteItems->patchEntity($noteItem, $noteData);
             if ($this->NoteItems->save($noteItem)) {
-                $this->Flash->success(__('The note item has been saved.'));
-                return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Flash->error(__('The note item could not be saved. Please, try again.'));
+                $response['message'] = 'The note has been saved.';
+                $response['noteItem'] = $noteItem;
+                $this->set(compact('response'));
+                return;
             }
         }
-        $items = $this->NoteItems->Items->find('list', ['limit' => 200]);
-        $users = $this->NoteItems->Users->find('list', ['limit' => 200]);
-        $this->set(compact('noteItem', 'items', 'users'));
-        $this->set('_serialize', ['noteItem']);
+        //debug($noteItem);
+        $response['error'] = true;
+        $response['message'] = 'The notecould not be saved. Please, try again.';
+        $this->set(compact('response'));
+        return;
     }
 
     /**

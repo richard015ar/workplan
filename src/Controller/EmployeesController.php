@@ -10,7 +10,13 @@ use App\Controller\AppController;
  */
 class EmployeesController extends AppController
 {
-
+    // Paginate configuration
+    public $paginate = [
+        'limit' => 2,
+        'order' => [
+            'Employees.created' => 'asc'
+        ]
+    ];
     /**
      * Index method
      *
@@ -106,5 +112,28 @@ class EmployeesController extends AppController
             $this->Flash->error(__('The employee could not be deleted. Please, try again.'));
         }
         return $this->redirect(['action' => 'index']);
+    }
+
+    public function employeesList()
+    {
+        $response = [
+            'error' => true,
+            'message' => ''
+        ];
+        if (!$this->request->is('get')) {
+            $response['message'] = 'Invalid request';
+            $this->set(compact('response'));
+            return;
+        }
+        $employees = $this->Employees->getEmployeesList();
+        if (!$employees)  {
+            $response['message'] = 'All fields must be fill';
+            $this->set(compact('response'));
+            return;
+        }
+        $response['error'] = false;
+        $response['employees'] = $employees;
+        $this->set(compact('response'));
+        return;
     }
 }

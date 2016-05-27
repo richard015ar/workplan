@@ -147,4 +147,25 @@ class UsersTable extends Table
         return false;
     }
 
+    public function getSearch($search = null) {
+        $items = $this->Employees->Plans->Items->find()
+                    ->where(['description LIKE ' => "%$search%"]);
+        $notePlans = $this->NotePlans->find()
+                    ->where(['note LIKE ' => "%$search%"]);
+        $noteEmployees = $this->NoteEmployees->find()
+                    ->where(['note LIKE ' => "%$search%"]);
+        $noteItems = $this->NoteItems->find()
+                    ->where(['note LIKE ' => "%$search%"]);
+        $users = $this->find()
+                    ->where(['username LIKE ' => "%$search%"])
+                    ->orWhere(['email LIKE ' => "%$search%"])
+                    ->orWhere(['full_name LIKE ' => "%$search%"]);
+        return [
+            'Items' => $items,
+            'NotePlans' => $notePlans,
+            'NoteEmployees' => $noteEmployees,
+            'NoteItems' =>$noteItems,
+            'Users' => $users
+        ];
+    }
 }

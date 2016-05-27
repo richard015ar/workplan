@@ -115,4 +115,32 @@ class PlansTable extends Table
         }
         return $plans;
     }
+
+    public function getPlans($startDate, $endDate, $order, $searchTerm = null, $order, $state)
+    {
+        if (is_null($startDate) || is_null($endDate) || is_null($order) || is_null($state)) {
+            $response['message'] = 'All data must be filled';
+            return false;
+        }
+        if ($searchTerm != '' || !is_null($searchTerm)) {
+            $plans = $this->find()->contain([
+                 'Items' => function ($q) use($searchTerm){
+                   return $q->where(['Items.description LIKE' => "%$searchTerm%"]);
+                 }
+             ]);
+               $plans = $plans->where(function ($exp, $q) use ($startDate, $endDate) {
+                    return $exp->between('Plans.created', $startDate, $endDate);
+                })
+                ->where(['Plans.state' => $state])
+                ->order(['Plans.created' => $order]);
+        } else {
+            $plans = $this->find()->contain(['Items'])
+               ->where(function ($exp, $q) use ($startDate, $endDate){
+                    return $exp->between('Plans.created', $startDate, $endDate);
+                })
+                ->where(['Plans.state' => $state])
+                ->order(['Plans.created' => $order]);
+        }
+        return $plans;
+    }
 }

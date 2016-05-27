@@ -10,7 +10,13 @@ use App\Controller\AppController;
  */
 class NotePlansController extends AppController
 {
-
+    // Paginate configuration
+    public $paginate = [
+        'limit' => 2,
+        'order' => [
+            'NotePlans.created' => 'asc'
+        ]
+    ];
     /**
      * Index method
      *
@@ -113,7 +119,7 @@ class NotePlansController extends AppController
         return $this->redirect(['action' => 'index']);
     }
 
-    public function NotePlansAdd($id = null)//hacer un addPlan, el add primero
+    public function addNote()
     {
         $response = [
           'message' => '',
@@ -121,7 +127,11 @@ class NotePlansController extends AppController
         ];
         $notePlan = $this->NotePlans->newEntity();
         if ($this->request->is('post')) {
-            $notePlan = $this->NotePlans->patchEntity($notePlan, $this->request->data);
+            $userId = $this->Auth->user('id');
+            $noteData['user_id'] = $userId;
+            $noteData['plan_id'] = $this->request->data['plan_id'];
+            $noteData['note'] = $this->request->data['note'];
+            $notePlan = $this->NotePlans->patchEntity($notePlan, $noteData);
             if ($this->NotePlans->save($notePlan)) {
                 $response['message'] = 'The note plan has been saved.';
                 $response['notePlan'] = $notePlan;
@@ -133,6 +143,5 @@ class NotePlansController extends AppController
         $response['message'] = 'The note plan could not be saved. Please, try again.';
         $this->set(compact('response'));
         return;
-        //$this->set(compact('response'));
     }
 }

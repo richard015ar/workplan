@@ -10,6 +10,13 @@ use App\Controller\AppController;
  */
 class PlansController extends AppController
 {
+    // Paginate configuration
+    public $paginate = [
+        'limit' => 2,
+        'order' => [
+            'Plans.created' => 'asc'
+        ]
+    ];
 
     /**
      * Index method
@@ -300,4 +307,34 @@ class PlansController extends AppController
         $this->set(compact('response'));
         return;
     }
+
+    public function plans()
+    {
+        $response = [
+            'error' => true,
+            'message' => ''
+        ];
+        if (!$this->request->is('get')) {
+            $response['message'] = 'Invalid request';
+            $this->set(compact('response'));
+            return;
+        }
+        $startDate = $this->request->query('startDate');
+        $endDate = $this->request->query('endDate');
+        $searchTerm = $this->request->query('searchTerm');
+        $order = $this->request->query('order');
+        $state = $this->request->query('state');
+        $plans = $this->Plans->getPlans($startDate, $endDate, $order, $searchTerm = null, $order, $state);
+        if (!$plans)  {
+            $response['message'] = 'All fields must be fill';
+            $this->set(compact('response'));
+            return;
+        }
+        $response['error'] = false;
+        $response['plans'] = $plans;
+        $this->set(compact('response'));
+        return;
+    }
+
+
 }

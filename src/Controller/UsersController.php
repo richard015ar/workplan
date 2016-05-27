@@ -174,4 +174,22 @@ class UsersController extends AppController
         }
         return $this->redirect(['action' => 'index']);
     }
+
+    public function search() {
+        $response = [
+            'error' => true,
+            'message' => ''
+        ];
+        if($this->Auth->user('role') == 1) {
+            if ($this->request->is('get')) {
+                $search = $this->request->query('search');
+                $result = $this->Users->getSearch($search);
+                // debug($result['Notes']->user);
+                $response['error'] = false;
+                $response['Result'] = $result;
+                $this->set(compact('response'));
+                return;
+            }
+        }
+    }
 }

@@ -101,4 +101,8 @@ class EmployeesTable extends Table
         $employee = $employee->toArray();
         return $employee[0]->id;
     }
+    public function getEmployeesList() {
+        $employee = $this->find('all');
+        return $employee;
+    }
 }
