@@ -23,13 +23,8 @@ class PlansController extends AppController
      *
      * @return \Cake\Network\Response|null
      */
-    public function index($id = null)
+    public function index()
     {
-        $plan = $this->Plans->getEmployeeByPlans($id);
-
-        $plans = $this->paginate($this->Plans);
-
-        $this->set(compact('plans', 'plan'));
     }
 
     /**
@@ -296,6 +291,10 @@ class PlansController extends AppController
         $searchTerm = $this->request->query('searchTerm');
         $order = $this->request->query('order');
         $employeeId = $this->Plans->Employees->getIdByUserId($this->Auth->user('id'));
+        $limit = $this->request->query('limit');
+        if (!$limit) {
+            $limit = 10;
+        }
         $plans = $this->Plans->getPlansByEmployeeId($startDate, $endDate, $order, $searchTerm, $employeeId);
         if (!$plans)  {
             $response['message'] = 'All fields must be fill';
@@ -303,17 +302,22 @@ class PlansController extends AppController
             return;
         }
         $response['error'] = false;
-        $response['plans'] = $plans;
+        $config = [
+            'limit' => $limit,
+        ];
+        $response['plans'] = $this->Paginator->paginate($plans, $config);
+        $response['total'] = count($response['plans']);
         $this->set(compact('response'));
         return;
     }
 
-    public function plans()
+    public function plan()
     {
         $response = [
             'error' => true,
             'message' => ''
         ];
+        if($this->Auth->user('role') == 1){
         if (!$this->request->is('get')) {
             $response['message'] = 'Invalid request';
             $this->set(compact('response'));
@@ -324,6 +328,10 @@ class PlansController extends AppController
         $searchTerm = $this->request->query('searchTerm');
         $order = $this->request->query('order');
         $state = $this->request->query('state');
+        $limit = $this->request->query('limit');
+        if (!$limit) {
+            $limit = 10;
+        }
         $plans = $this->Plans->getPlans($startDate, $endDate, $order, $searchTerm = null, $order, $state);
         if (!$plans)  {
             $response['message'] = 'All fields must be fill';
@@ -331,10 +339,18 @@ class PlansController extends AppController
             return;
         }
         $response['error'] = false;
-        $response['plans'] = $plans;
+        $config = [
+            'limit' => $limit,
+        ];
+
+        $response['plans'] = $this->Paginator->paginate($plans, $config);
+        $response['total'] = count($response['plans']);
+        $this->set(compact('response'));
+        return;
+        }
+        $response['message'] = 'Invalid users';
         $this->set(compact('response'));
         return;
     }
-
 
 }

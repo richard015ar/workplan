@@ -77,18 +77,7 @@ class ItemsTable extends Table
         $rules->add($rules->existsIn(['plan_id'], 'Plans'));
         return $rules;
     }
-
-    public function getItemsByPlan($id)
-    {
-        $itemList = $this->find()->contain([
-        'Plans' => function ($q) use ($id) {
-            return $q->where(['Items.plan_id' => $id]);
-        }])
-        ->where(['state =' => 2])
-        ->order(['created' => 'DESC']);
-        return $itemList;
-    }
-
+    
     public function getItemsByEmployeeId($startDate, $endDate, $order, $stateItem = null, $searchTerm = null, $employeeId) {
         if (is_null($startDate) || is_null($endDate) || is_null($order) || is_null($employeeId)) {
             $response['message'] = 'All data must be filled';

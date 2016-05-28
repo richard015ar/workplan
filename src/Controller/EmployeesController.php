@@ -24,10 +24,7 @@ class EmployeesController extends AppController
      */
     public function index()
     {
-        $employees = $this->Employees->getListEmployess($this->Auth->user('employee_id'));
-        $employee = $this->paginate($this->Employees);
 
-        $this->set(compact('employees', 'employee'));
     }
 
     /**
@@ -120,20 +117,48 @@ class EmployeesController extends AppController
             'error' => true,
             'message' => ''
         ];
-        if (!$this->request->is('get')) {
-            $response['message'] = 'Invalid request';
+        if($this->Auth->user('role') == 1){
+            if (!$this->request->is('get')) {
+                $response['message'] = 'Invalid request';
+                $this->set(compact('response'));
+                return;
+            }
+            $startDate = $this->request->query('startDate');
+            $endDate = $this->request->query('endDate');
+            $searchTerm = $this->request->query('searchTerm');
+            $order = $this->request->query('order');
+            $limit = $this->request->query('limit');
+                if (!$limit) {
+                    $limit = 10;
+                }
+            $employees = $this->Employees->getEmployeeList($startDate, $endDate, $order, $searchTerm = null);
+                if (!$employees)  {
+                    $response['message'] = 'All fields must be fill';
+                    $this->set(compact('response'));
+                    return;
+                }
+                $response['error'] = false;
+                $config = [
+                    'limit' => $limit,
+                ];
+            $response['employees'] = $this->Paginator->paginate($employees, $config);
+            $response['total'] = count($response['employees']);
             $this->set(compact('response'));
             return;
         }
-        $employees = $this->Employees->getEmployeesList();
-        if (!$employees)  {
-            $response['message'] = 'All fields must be fill';
-            $this->set(compact('response'));
-            return;
-        }
-        $response['error'] = false;
-        $response['employees'] = $employees;
+        $response['message'] = 'Invalid users';
         $this->set(compact('response'));
         return;
+    }
+
+    public function sendMail()
+    {
+        $plans = $this->Employees->getEmployeeNotPlans();
+
+        foreach($plans as $plan) {
+            $this->out();
+            $this->out();
+            $this->out();
+        }
     }
 }

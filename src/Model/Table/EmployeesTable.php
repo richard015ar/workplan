@@ -77,18 +77,6 @@ class EmployeesTable extends Table
         return $rules;
     }
 
-    public function getListEmployess($employeeId)
-    {
-        $list = $this->find()->contain([
-             'Users', 'Plans' => function ($q) {
-               return $q->where(['DAY(Plans.created) = DAY(NOW())-1']);
-             }
-         ])
-         ->where(['Employees.id' => $employeeId]);
-        //debug($list->toArray());
-        return $list;
-    }
-
     /*
     Return ID by User ID
     */
@@ -101,8 +89,32 @@ class EmployeesTable extends Table
         $employee = $employee->toArray();
         return $employee[0]->id;
     }
-    public function getEmployeesList() {
-        $employee = $this->find('all');
+
+    public function getEmployeeList($startDate, $endDate, $order,  $searchTerm = null)
+    {
+        if (is_null($startDate) || is_null($endDate) || is_null($order)) {
+            $response['message'] = 'All data must be filled';
+            return false;
+        }
+        if ($searchTerm != '' || !is_null($searchTerm)) {
+            $employee = $this->find()->contain([
+                'Plans.Items' => function ($q) use($searchTerm){
+                    return $q->where(['Items.description LIKE' => "%$searchTerm%"]);
+                }
+            ]);
+            $employee = $employee->where(function ($exp, $q) use ($startDate, $endDate) {
+                return $exp->between('User.full_name', $startDate, $endDate);
+            });
+            $employee = $employee->where(['Employees.user_id'])
+            ->order(['Users.full_name' => $order]);
+        } else {
+            $employee = $this->find()->contain(['Users'])
+            ->where(function ($exp, $q) use ($startDate, $endDate){
+                return $exp->between('Users.full_name', $startDate, $endDate);
+            });
+            $employee = $employee->where(['Employees.user_id'])
+            ->order(['Users.full_name' => $order]);
+        }
         return $employee;
     }
 }

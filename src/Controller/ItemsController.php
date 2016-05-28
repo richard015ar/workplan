@@ -23,14 +23,6 @@ class ItemsController extends AppController
      *
      * @return \Cake\Network\Response|null
      */
-    public function items($id = null)
-    {
-        $item = $this->Items->getItemsByPlan($id);
-        $items = $this->paginate($this->Items);
-
-        $this->set(compact('items', 'item'));
-    }
-
     /**
      * View method
      *

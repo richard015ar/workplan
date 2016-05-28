@@ -10,13 +10,6 @@ use App\Controller\AppController;
  */
 class NotePlansController extends AppController
 {
-    // Paginate configuration
-    public $paginate = [
-        'limit' => 2,
-        'order' => [
-            'NotePlans.created' => 'asc'
-        ]
-    ];
     /**
      * Index method
      *

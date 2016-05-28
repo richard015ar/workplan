@@ -184,7 +184,6 @@ class UsersController extends AppController
             if ($this->request->is('get')) {
                 $search = $this->request->query('search');
                 $result = $this->Users->getSearch($search);
-                // debug($result['Notes']->user);
                 $response['error'] = false;
                 $response['Result'] = $result;
                 $this->set(compact('response'));

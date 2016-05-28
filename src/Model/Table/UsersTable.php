@@ -160,6 +160,7 @@ class UsersTable extends Table
                     ->where(['username LIKE ' => "%$search%"])
                     ->orWhere(['email LIKE ' => "%$search%"])
                     ->orWhere(['full_name LIKE ' => "%$search%"]);
+    
         return [
             'Items' => $items,
             'NotePlans' => $notePlans,
