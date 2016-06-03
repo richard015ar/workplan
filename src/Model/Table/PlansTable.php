@@ -116,7 +116,7 @@ class PlansTable extends Table
         return $plans;
     }
 
-    public function getPlans($startDate, $endDate, $order, $searchTerm = null, $order, $state)
+    public function getPlans($startDate, $endDate, $order, $searchTerm = null, $state)
     {
         if (is_null($startDate) || is_null($endDate) || is_null($order) || is_null($state)) {
             $response['message'] = 'All data must be filled';

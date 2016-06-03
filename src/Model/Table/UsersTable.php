@@ -141,7 +141,7 @@ class UsersTable extends Table
         $user = $this->find()
                 ->where(['Users.username' => $username]);
         $user = $user->toArray();
-        if ((new DefaultPasswordHasher)->check($password, $user[0]->password)) {
+        if (count($user) > 0 && (new DefaultPasswordHasher)->check($password, $user[0]->password)) {
             return $user;
         }
         return false;
@@ -160,7 +160,7 @@ class UsersTable extends Table
                     ->where(['username LIKE ' => "%$search%"])
                     ->orWhere(['email LIKE ' => "%$search%"])
                     ->orWhere(['full_name LIKE ' => "%$search%"]);
-    
+
         return [
             'Items' => $items,
             'NotePlans' => $notePlans,

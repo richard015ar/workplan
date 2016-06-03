@@ -332,7 +332,7 @@ class PlansController extends AppController
         if (!$limit) {
             $limit = 10;
         }
-        $plans = $this->Plans->getPlans($startDate, $endDate, $order, $searchTerm = null, $order, $state);
+        $plans = $this->Plans->getPlans($startDate, $endDate, $order, $searchTerm = null, $state);
         if (!$plans)  {
             $response['message'] = 'All fields must be fill';
             $this->set(compact('response'));
