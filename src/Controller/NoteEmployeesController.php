@@ -83,22 +83,34 @@ class NoteEmployeesController extends AppController
      */
     public function edit($id = null)
     {
-        $noteEmployee = $this->NoteEmployees->get($id, [
-            'contain' => []
-        ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $noteEmployee = $this->NoteEmployees->patchEntity($noteEmployee, $this->request->data);
-            if ($this->NoteEmployees->save($noteEmployee)) {
-                $this->Flash->success(__('The note employee has been saved.'));
-                return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Flash->error(__('The note employee could not be saved. Please, try again.'));
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
+        if ($this->request->is(['put'])) {
+            if($this->request->data['note'] && $this->request->data['employee_id']) {
+                $noteEmployee = $this->NoteEmployees->get($id);
+                if($noteEmployee->user_id == $this->Auth->user('id')) {
+                    $noteEmployee->note = $this->request->data['note'];
+                    $noteEmployee->employee_id = $this->request->data['employee_id'];
+                    if ($this->NoteEmployees->save($noteEmployee)) {
+                        $response['message'] = 'The note has been saved.';
+                        $response['noteEmployee'] = $noteEmployee;
+                        $this->set(compact('response'));
+                        return;
+                    }
+                    $response['message'] = 'error. The note not has been saved.';
+                    $response['error'] = true;
+                    $this->set(compact('response'));
+                    return;
+                } else {
+                    $response['message'] = "You don't authorized";
+                    $response['error'] = true;
+                    $this->set(compact('response'));
+                    return;
+                }
             }
         }
-        $users = $this->NoteEmployees->Users->find('list', ['limit' => 200]);
-        $employees = $this->NoteEmployees->Employees->find('list', ['limit' => 200]);
-        $this->set(compact('noteEmployee', 'users', 'employees'));
-        $this->set('_serialize', ['noteEmployee']);
     }
 
     /**
@@ -110,13 +122,23 @@ class NoteEmployeesController extends AppController
      */
     public function delete($id = null)
     {
-        $this->request->allowMethod(['post', 'delete']);
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
         $noteEmployee = $this->NoteEmployees->get($id);
-        if ($this->NoteEmployees->delete($noteEmployee)) {
-            $this->Flash->success(__('The note employee has been deleted.'));
-        } else {
-            $this->Flash->error(__('The note employee could not be deleted. Please, try again.'));
+        $this->request->allowMethod(['delete']);
+        if($noteEmployee->user_id == $this->Auth->user('id')) {
+            if ($this->NoteEmployees->delete($noteEmployee)) {
+                $response['message'] = 'The note employee has been deleted.';
+                $response['noteEmployee'] = $noteEmployee;
+                $this->set(compact('response'));
+                return;
+            }
         }
-        return $this->redirect(['action' => 'index']);
+        $response['error'] = true;
+        $response['message'] = 'The note employee could not be deleted. Please, try again.';
+        $this->set(compact('response'));
+        return;
     }
 }

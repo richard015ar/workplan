@@ -64,4 +64,32 @@ class AdministratorsTable extends Table
         $rules->add($rules->existsIn(['user_id'], 'Users'));
         return $rules;
     }
+
+    public function getAdministratorList($startDate, $endDate, $order,  $searchTerm = null)
+    {
+        if (is_null($startDate) || is_null($endDate) || is_null($order)) {
+            $response['message'] = 'All data must be filled';
+            return false;
+        }
+        if ($searchTerm != '' || !is_null($searchTerm)) {
+            $administrators = $this->find()->contain([
+                'Plans.Items' => function ($q) use($searchTerm){
+                    return $q->where(['Items.description LIKE' => "%$searchTerm%"]);
+                }
+            ]);
+            $administrators = $administrators->where(function ($exp, $q) use ($startDate, $endDate) {
+                return $exp->between('User.full_name', $startDate, $endDate);
+            });
+            $administrators = $administrators->where(['Administrators.user_id'])
+            ->order(['Users.full_name' => $order]);
+        } else {
+            $administrators = $this->find()->contain(['Users'])
+            ->where(function ($exp, $q) use ($startDate, $endDate){
+                return $exp->between('Users.full_name', $startDate, $endDate);
+            });
+            $administrators = $administrators->where(['Administrators.user_id'])
+            ->order(['Users.full_name' => $order]);
+        }
+        return $administrators;
+    }
 }

@@ -4,15 +4,17 @@ namespace App\Model\Entity;
 use Cake\ORM\Entity;
 
 /**
- * Config Entity.
+ * HomeWorking Entity.
  *
  * @property int $id
+ * @property int $user_id
+ * @property \App\Model\Entity\User $user
+ * @property int $state
+ * @property \Cake\I18n\Time $date
  * @property \Cake\I18n\Time $created
  * @property \Cake\I18n\Time $modified
- * @property string $key
- * @property string $value
  */
-class Config extends Entity
+class HomeWorking extends Entity
 {
 
     /**

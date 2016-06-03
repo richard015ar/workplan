@@ -86,22 +86,34 @@ class NoteItemsController extends AppController
      */
     public function edit($id = null)
     {
-        $noteItem = $this->NoteItems->get($id, [
-            'contain' => []
-        ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $noteItem = $this->NoteItems->patchEntity($noteItem, $this->request->data);
-            if ($this->NoteItems->save($noteItem)) {
-                $this->Flash->success(__('The note item has been saved.'));
-                return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Flash->error(__('The note item could not be saved. Please, try again.'));
+        // this is a return variable
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
+        if ($this->request->is(['put'])) {
+            if($this->request->data['note']) {
+                $noteItem = $this->NoteItems->get($id);
+                if($noteItem->user_id == $this->Auth->user('id')) {
+                    $noteItem->note = $this->request->data['note'];
+                    if ($this->NoteItems->save($noteItem)) {
+                        $response['message'] = 'The note item has been saved.';
+                        $response['noteItem'] = $noteItem;
+                        $this->set(compact('response'));
+                        return;
+                    }
+                    $response['message'] = 'error. The note item not has been saved.';
+                    $response['error'] = true;
+                    $this->set(compact('response'));
+                    return;
+                } else {
+                    $response['message'] = "You don't authorized";
+                    $response['error'] = true;
+                    $this->set(compact('response'));
+                    return;
+                }
             }
         }
-        $items = $this->NoteItems->Items->find('list', ['limit' => 200]);
-        $users = $this->NoteItems->Users->find('list', ['limit' => 200]);
-        $this->set(compact('noteItem', 'items', 'users'));
-        $this->set('_serialize', ['noteItem']);
     }
 
     /**
@@ -113,13 +125,24 @@ class NoteItemsController extends AppController
      */
     public function delete($id = null)
     {
-        $this->request->allowMethod(['post', 'delete']);
+        // this is a return variable
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
         $noteItem = $this->NoteItems->get($id);
-        if ($this->NoteItems->delete($noteItem)) {
-            $this->Flash->success(__('The note item has been deleted.'));
-        } else {
-            $this->Flash->error(__('The note item could not be deleted. Please, try again.'));
+        $this->request->allowMethod(['delete']);
+        if($noteItem->user_id == $this->Auth->user('id')) {
+            if ($this->NoteItems->delete($noteItem)) {
+                $response['message'] = 'The note item has been deleted.';
+                $response['noteItem'] = $noteItem;
+                $this->set(compact('response'));
+                return;
+            }
         }
-        return $this->redirect(['action' => 'index']);
+        $response['error'] = true;
+        $response['message'] = 'The note item could not be deleted. Please, try again.';
+        $this->set(compact('response'));
+        return;
     }
 }

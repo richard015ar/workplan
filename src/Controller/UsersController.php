@@ -138,24 +138,28 @@ class UsersController extends AppController
      * @return \Cake\Network\Response|void Redirects on successful edit, renders view otherwise.
      * @throws \Cake\Network\Exception\NotFoundException When record not found.
      */
-    public function edit($id = null)
+    public function edit($id)
     {
-        $user = $this->Users->get($id, [
-            'contain' => []
-        ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
+        // this is a return variable
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
+        $user = $this->Users->get($id);
+        if ($this->request->is(['put'])) {
             $user = $this->Users->patchEntity($user, $this->request->data);
             if ($this->Users->save($user)) {
-                $this->Flash->success(__('The user has been saved.'));
-                return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Flash->error(__('The user could not be saved. Please, try again.'));
+                $response['message'] = 'The user has been saved.';
+                $response['user'] = $user;
+                $this->set(compact('response'));
+                return;
             }
         }
-        $this->set(compact('user'));
-        $this->set('_serialize', ['user']);
+        $response['error'] = true;
+        $response['message'] = 'Error saving user';
+        $this->set(compact('response'));
+        return;
     }
-
     /**
      * Delete method
      *
@@ -165,14 +169,22 @@ class UsersController extends AppController
      */
     public function delete($id = null)
     {
-        $this->request->allowMethod(['post', 'delete']);
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
         $user = $this->Users->get($id);
+        $this->request->allowMethod(['delete']);
         if ($this->Users->delete($user)) {
-            $this->Flash->success(__('The user has been deleted.'));
-        } else {
-            $this->Flash->error(__('The user could not be deleted. Please, try again.'));
+            $response['message'] = 'The user has been deleted.';
+            $response['user'] = $user;
+            $this->set(compact('response'));
+            return;
         }
-        return $this->redirect(['action' => 'index']);
+        $response['error'] = true;
+        $response['message'] = 'The user could not be deleted. Please, try again.';
+        $this->set(compact('response'));
+        return;
     }
 
     public function search() {

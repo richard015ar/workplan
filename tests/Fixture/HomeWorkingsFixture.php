@@ -4,10 +4,10 @@ namespace App\Test\Fixture;
 use Cake\TestSuite\Fixture\TestFixture;
 
 /**
- * ConfigsFixture
+ * HomeWorkingsFixture
  *
  */
-class ConfigsFixture extends TestFixture
+class HomeWorkingsFixture extends TestFixture
 {
 
     /**
@@ -18,10 +18,11 @@ class ConfigsFixture extends TestFixture
     // @codingStandardsIgnoreStart
     public $fields = [
         'id' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => false, 'default' => null, 'comment' => '', 'autoIncrement' => true, 'precision' => null],
+        'user_id' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null, 'autoIncrement' => null],
+        'state' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null, 'autoIncrement' => null],
+        'day_work' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
         'created' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
         'modified' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
-        'key' => ['type' => 'string', 'length' => 255, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null, 'fixed' => null],
-        'value' => ['type' => 'string', 'length' => 255, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null, 'fixed' => null],
         '_constraints' => [
             'primary' => ['type' => 'primary', 'columns' => ['id'], 'length' => []],
         ],
@@ -40,10 +41,11 @@ class ConfigsFixture extends TestFixture
     public $records = [
         [
             'id' => 1,
-            'created' => '2016-05-31 15:02:05',
-            'modified' => '2016-05-31 15:02:05',
-            'key' => 'Lorem ipsum dolor sit amet',
-            'value' => 'Lorem ipsum dolor sit amet'
+            'user_id' => 1,
+            'state' => 1,
+            'day_work' => '2016-05-31 15:01:30',
+            'created' => '2016-05-31 15:01:30',
+            'modified' => '2016-05-31 15:01:30'
         ],
     ];
 }
