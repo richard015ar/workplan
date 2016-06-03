@@ -53,20 +53,21 @@ class ItemsController extends AppController
         ];
         $item = $this->Items->newEntity();
         if ($this->request->is('post')) {
-            $item = $this->Items->patchEntity($item, $this->request->data);
+            $itemData['plan_id'] = $this->request->data['plan_id'];
+            $itemData['state'] = $this->request->data['state'];
+            $itemData['description'] = $this->request->data['description'];
+            $item = $this->Items->patchEntity($item, $itemData);
             if ($this->Items->save($item)) {
                 $response['message'] = 'The item has been saved.';
                 $response['item'] = $item;
                 $this->set(compact('response'));
                 return;
-            } else {
-                $response['message'] = 'The item could not be saved. Please, try again.';
-                $response['error'] = true;
-                $this->set(compact('response'));
-                return;
             }
         }
-        $this->set('response');
+        $response['message'] = 'The item could not be saved. Please, try again.';
+        $response['error'] = true;
+        $this->set(compact('response'));
+        return;
     }
 
     /**
@@ -82,24 +83,23 @@ class ItemsController extends AppController
           'message' => '',
           'error' => false
         ];
-        $item = $this->Items->get($id, [
-            'contain' => []
-        ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $item = $this->Items->patchEntity($item, $this->request->data);
-            if ($this->Items->save($item)) {
-                $response['message'] = 'The item has been saved.';
-                $response['item'] = $item;
-                $this->set(compact('response'));
-                return;
-            } else {
-                $response['message'] = 'The item could not be saved. Please, try again.';
-                $response['error'] = true;
-                $this->set(compact('response'));
-                return;
+        if ($this->request->is(['put'])) {
+            if($this->request->data['state'] && $this->request->data['description']) {
+                $item = $this->Items->get($id);
+                    $item->state = $this->request->data['state'];
+                    $item->description = $this->request->data['description'];
+                    if ($this->Items->save($item)) {
+                        $response['message'] = 'The item has been saved.';
+                        $response['item'] = $item;
+                        $this->set(compact('response'));
+                        return;
+                    }
+                    $response['message'] = 'error. The item not has been saved.';
+                    $response['error'] = true;
+                    $this->set(compact('response'));
+                    return;
             }
         }
-        $this->set('response');
     }
 
     /**
@@ -111,24 +111,22 @@ class ItemsController extends AppController
      */
     public function delete($id = null)
     {
-            $response = [
-              'message' => '',
-              'error' => false
-            ];
-        $this->request->allowMethod(['post', 'delete']);
+        $response = [
+            'message' => '',
+            'error' => false
+        ];
         $item = $this->Items->get($id);
+        $this->request->allowMethod(['delete']);
         if ($this->Items->delete($item)) {
             $response['message'] = 'The item has been deleted.';
             $response['item'] = $item;
             $this->set(compact('response'));
             return;
-        } else {
-            $response['message'] = 'The item could not be deleted. Please, try again.';
-            $response['error'] = true;
-            $this->set(compact('response'));
-            return;
         }
-        return $this->redirect(['action' => 'index']);
+        $response['message'] = 'The item could not be deleted. Please, try again.';
+        $response['error'] = true;
+        $this->set(compact('response'));
+        return;
     }
 
     /*

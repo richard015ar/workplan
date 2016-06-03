@@ -48,24 +48,6 @@ class NotePlansController extends AppController
      *
      * @return \Cake\Network\Response|void Redirects on successful add, renders view otherwise.
      */
-    public function add()
-    {
-        $notePlan = $this->NotePlans->newEntity();
-        if ($this->request->is('post')) {
-            $notePlan = $this->NotePlans->patchEntity($notePlan, $this->request->data);
-            if ($this->NotePlans->save($notePlan)) {
-                $this->Flash->success(__('The note plan has been saved.'));
-                return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Flash->error(__('The note plan could not be saved. Please, try again.'));
-            }
-        }
-        $users = $this->NotePlans->Users->find('list', ['limit' => 200]);
-        $plans = $this->NotePlans->Plans->find('list', ['limit' => 200]);
-        $this->set(compact('notePlan', 'users', 'plans'));
-        $this->set('_serialize', ['notePlan']);
-    }
-
     /**
      * Edit method
      *
@@ -75,22 +57,33 @@ class NotePlansController extends AppController
      */
     public function edit($id = null)
     {
-        $notePlan = $this->NotePlans->get($id, [
-            'contain' => []
-        ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $notePlan = $this->NotePlans->patchEntity($notePlan, $this->request->data);
-            if ($this->NotePlans->save($notePlan)) {
-                $this->Flash->success(__('The note plan has been saved.'));
-                return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Flash->error(__('The note plan could not be saved. Please, try again.'));
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
+        if ($this->request->is(['put'])) {
+            if($this->request->data['note']) {
+                $notePlan = $this->NotePlans->get($id);
+                if($notePlan->user_id == $this->Auth->user('id')) {
+                    $notePlan->note = $this->request->data['note'];
+                    if ($this->NotePlans->save($notePlan)) {
+                        $response['message'] = 'The note plan has been saved.';
+                        $response['notePlan'] = $notePlan;
+                        $this->set(compact('response'));
+                        return;
+                    }
+                    $response['message'] = 'error. The note plan not has been saved.';
+                    $response['error'] = true;
+                    $this->set(compact('response'));
+                    return;
+                } else {
+                    $response['message'] = "You don't authorized";
+                    $response['error'] = true;
+                    $this->set(compact('response'));
+                    return;
+                }
             }
         }
-        $users = $this->NotePlans->Users->find('list', ['limit' => 200]);
-        $plans = $this->NotePlans->Plans->find('list', ['limit' => 200]);
-        $this->set(compact('notePlan', 'users', 'plans'));
-        $this->set('_serialize', ['notePlan']);
     }
 
     /**
@@ -102,14 +95,24 @@ class NotePlansController extends AppController
      */
     public function delete($id = null)
     {
-        $this->request->allowMethod(['post', 'delete']);
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
         $notePlan = $this->NotePlans->get($id);
-        if ($this->NotePlans->delete($notePlan)) {
-            $this->Flash->success(__('The note plan has been deleted.'));
-        } else {
-            $this->Flash->error(__('The note plan could not be deleted. Please, try again.'));
+        $this->request->allowMethod(['delete']);
+        if($notePlan->user_id == $this->Auth->user('id')) {
+            if ($this->NotePlans->delete($notePlan)) {
+                $response['message'] = 'The note plan has been deleted.';
+                $response['notePlan'] = $notePlan;
+                $this->set(compact('response'));
+                return;
+            }
         }
-        return $this->redirect(['action' => 'index']);
+        $response['error'] = true;
+        $response['message'] = 'The note plan could not deleted. Please, try again.';
+        $this->set(compact('response'));
+        return;
     }
 
     public function addNote()

@@ -44,14 +44,12 @@ class ConfigsTable extends Table
             ->allowEmpty('id', 'create');
 
         $validator
-            ->dateTime('time_start')
-            ->requirePresence('time_start', 'create')
-            ->notEmpty('time_start');
+            ->requirePresence('key', 'create')
+            ->notEmpty('key');
 
         $validator
-            ->dateTime('time_end')
-            ->requirePresence('time_end', 'create')
-            ->notEmpty('time_end');
+            ->requirePresence('value', 'create')
+            ->notEmpty('value');
 
         return $validator;
     }

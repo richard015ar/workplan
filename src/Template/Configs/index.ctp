@@ -10,10 +10,10 @@
         <thead>
             <tr>
                 <th><?= $this->Paginator->sort('id') ?></th>
-                <th><?= $this->Paginator->sort('time_start') ?></th>
-                <th><?= $this->Paginator->sort('time_end') ?></th>
                 <th><?= $this->Paginator->sort('created') ?></th>
                 <th><?= $this->Paginator->sort('modified') ?></th>
+                <th><?= $this->Paginator->sort('key') ?></th>
+                <th><?= $this->Paginator->sort('value') ?></th>
                 <th class="actions"><?= __('Actions') ?></th>
             </tr>
         </thead>
@@ -21,10 +21,10 @@
             <?php foreach ($configs as $config): ?>
             <tr>
                 <td><?= $this->Number->format($config->id) ?></td>
-                <td><?= h($config->time_start) ?></td>
-                <td><?= h($config->time_end) ?></td>
                 <td><?= h($config->created) ?></td>
                 <td><?= h($config->modified) ?></td>
+                <td><?= h($config->key) ?></td>
+                <td><?= h($config->value) ?></td>
                 <td class="actions">
                     <?= $this->Html->link(__('View'), ['action' => 'view', $config->id]) ?>
                     <?= $this->Html->link(__('Edit'), ['action' => 'edit', $config->id]) ?>

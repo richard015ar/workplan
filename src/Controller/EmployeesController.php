@@ -51,19 +51,24 @@ class EmployeesController extends AppController
      */
     public function add()
     {
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
         $employee = $this->Employees->newEntity();
         if ($this->request->is('post')) {
             $employee = $this->Employees->patchEntity($employee, $this->request->data);
             if ($this->Employees->save($employee)) {
-                $this->Flash->success(__('The employee has been saved.'));
-                return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Flash->error(__('The employee could not be saved. Please, try again.'));
+                $response['message'] = 'The employee has been saved.';
+                $response['employee'] = $employee;
+                $this->set(compact('response'));
+                return;
             }
+            $response['message'] = 'The employee could not be saved. Please, try again.';
+            $response['error'] = true;
+            $this->set(compact('response'));
+            return;
         }
-        $users = $this->Employees->Users->find('list', ['limit' => 200]);
-        $this->set(compact('employee', 'users'));
-        $this->set('_serialize', ['employee']);
     }
 
     /**
@@ -75,21 +80,23 @@ class EmployeesController extends AppController
      */
     public function edit($id = null)
     {
-        $employee = $this->Employees->get($id, [
-            'contain' => []
-        ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
+        if ($this->request->is(['put'])) {
             $employee = $this->Employees->patchEntity($employee, $this->request->data);
             if ($this->Employees->save($employee)) {
-                $this->Flash->success(__('The employee has been saved.'));
-                return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Flash->error(__('The employee could not be saved. Please, try again.'));
+                $response['message'] = 'The employee has been saved.';
+                $response['employee'] = $employee;
+                $this->set(compact('response'));
+                return;
             }
+            $response['message'] = 'The employee could not be saved. Please, try again.';
+            $response['error'] = true;
+            $this->set(compact('response'));
+            return;
         }
-        $users = $this->Employees->Users->find('list', ['limit' => 200]);
-        $this->set(compact('employee', 'users'));
-        $this->set('_serialize', ['employee']);
     }
 
     /**
@@ -101,14 +108,21 @@ class EmployeesController extends AppController
      */
     public function delete($id = null)
     {
-        $this->request->allowMethod(['post', 'delete']);
-        $employee = $this->Employees->get($id);
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
+        $this->request->allowMethod(['delete']);
         if ($this->Employees->delete($employee)) {
-            $this->Flash->success(__('The employee has been deleted.'));
-        } else {
-            $this->Flash->error(__('The employee could not be deleted. Please, try again.'));
+            $response['message'] = 'The employee has been deleted.';
+            $response['employee'] = $employee;
+            $this->set(compact('response'));
+            return;
         }
-        return $this->redirect(['action' => 'index']);
+        $response['message'] = 'The employee could not be deleted. Please, try again.';
+        $response['error'] = true;
+        $this->set(compact('response'));
+        return;
     }
 
     public function employeesList()

@@ -9,8 +9,8 @@
     <fieldset>
         <legend><?= __('Add Config') ?></legend>
         <?php
-            echo $this->Form->input('time_start');
-            echo $this->Form->input('time_end');
+            echo $this->Form->input('key');
+            echo $this->Form->input('value');
         ?>
     </fieldset>
     <?= $this->Form->button(__('Submit')) ?>

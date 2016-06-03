@@ -49,31 +49,6 @@ class PlansController extends AppController
      *
      * @return \Cake\Network\Response|void Redirects on successful add, renders view otherwise.
      */
-    public function add()
-    {
-        // this is a return variable
-        $response = [
-          'message' => '',
-          'error' => false
-        ];
-        $plan = $this->Plans->newEntity();
-        if ($this->request->is('post')) {
-            $plan = $this->Plans->patchEntity($plan, $this->request->data);
-            if ($this->Plans->save($plan)) {
-                $response['message'] = 'The plan has been saved.';
-                $response['plan'] = $plan;
-                $this->set(compact('response'));
-                return;
-            } else {
-                $response['message'] = 'error. The plan not has been saved.';
-                $response['error'] = true;
-                $this->set(compact('response'));
-                return;
-            }
-        }
-        $this->set('response');
-    }
-
     /**
      * Edit method
      *
@@ -88,24 +63,29 @@ class PlansController extends AppController
           'message' => '',
           'error' => false
         ];
-        $plan = $this->Plans->get($id, [
-            'contain' => []
-        ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $plan = $this->Plans->patchEntity($plan, $this->request->data);
-            if ($this->Plans->save($plan)) {
-                $response['message'] = 'The plan has been saved.';
-                $response['plan'] = $plan;
-                $this->set(compact('response'));
-                return;
-            } else {
-                $response['message'] = 'error. The plan not has been saved.';
-                $response['error'] = true;
-                $this->set(compact('response'));
-                return;
+        if ($this->request->is(['put'])) {
+            if($this->request->data['state']) {
+                $plan = $this->Plans->get($id);
+                if($plan->employee_id == $this->Plans->Employees->getIdByUserId($this->Auth->user('id'))) {
+                    $plan->state = $this->request->data['state'];
+                    if ($this->Plans->save($plan)) {
+                        $response['message'] = 'The plan has been saved.';
+                        $response['plan'] = $plan;
+                        $this->set(compact('response'));
+                        return;
+                    }
+                    $response['message'] = 'error. The plan not has been saved.';
+                    $response['error'] = true;
+                    $this->set(compact('response'));
+                    return;
+                } else {
+                    $response['message'] = "You don't authorized";
+                    $response['error'] = true;
+                    $this->set(compact('response'));
+                    return;
+                }
             }
         }
-        $this->set('response');
     }
 
     /**
@@ -115,26 +95,25 @@ class PlansController extends AppController
      * @return \Cake\Network\Response|null Redirects to index.
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function delete($id = null)
-    {
+    public function delete($id = null) {
         $response = [
           'message' => '',
           'error' => false
         ];
-        $this->request->allowMethod(['post', 'delete']);
         $plan = $this->Plans->get($id);
-        if ($this->Plans->delete($plan)) {
-            $response['message'] = 'The plan has been deleted.';
-            $response['plan'] = $plan;
-            $this->set(compact('response'));
-            return;
-        } else {
-            $response['message'] = 'The plan could not be deleted. Please, try again.';
-            $response['error'] = true;
-            $this->set(compact('response'));
-            return;
+        $this->request->allowMethod(['delete']);
+        if($plan->employee_id == $this->Plans->Employees->getIdByUserId($this->Auth->user('id'))) {
+            if ($this->Plans->delete($plan)) {
+                $response['message'] = 'The plan has been deleted.';
+                $response['plan'] = $plan;
+                $this->set(compact('response'));
+                return;
+            }
         }
-        $this->set('response');
+        $response['message'] = 'The plan could not be deleted. Please, try again.';
+        $response['error'] = true;
+        $this->set(compact('response'));
+        return;
     }
 
     /*
@@ -352,5 +331,27 @@ class PlansController extends AppController
         $this->set(compact('response'));
         return;
     }
-
+    /*
+    It function is if the user has logged plans, if you have open plans gives you a list of plans,
+    if there are no open plans that is you are all closed returns a message.
+    */
+    public function closePlanOpen() {
+        $response = [
+            'error' => false,
+            'message' => ''
+        ];
+        $employeeId = $this->Plans->Employees->getIdByUserId($this->Auth->user('id'));
+        $plans = $this->Plans->getPlanOpenByEmployee($employeeId);
+        if($plans) {
+            $response['message'] = 'It has open plans.';
+            $response['plans'] = $plans;
+            $this->set(compact('response'));
+            return;
+        }
+        if (!$plans)  {
+            $response['message'] = 'It has no open plans';
+            $this->set(compact('response'));
+            return;
+        }
+    }
 }

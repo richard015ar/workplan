@@ -143,4 +143,11 @@ class PlansTable extends Table
         }
         return $plans;
     }
+//It function find open plans of logged user.
+    public function getPlanOpenByEmployee($employeeId) {
+        $plan = $this->find()
+        ->where(['state =' => 1])
+        ->andWhere(['Plans.employee_id' => $employeeId]);
+        return $plan;
+    }
 }

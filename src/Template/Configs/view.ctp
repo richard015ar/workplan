@@ -11,16 +11,16 @@
     <h3><?= h($config->id) ?></h3>
     <table class="vertical-table">
         <tr>
+            <th><?= __('Key') ?></th>
+            <td><?= h($config->key) ?></td>
+        </tr>
+        <tr>
+            <th><?= __('Value') ?></th>
+            <td><?= h($config->value) ?></td>
+        </tr>
+        <tr>
             <th><?= __('Id') ?></th>
             <td><?= $this->Number->format($config->id) ?></td>
-        </tr>
-        <tr>
-            <th><?= __('Time Start') ?></th>
-            <td><?= h($config->time_start) ?></td>
-        </tr>
-        <tr>
-            <th><?= __('Time End') ?></th>
-            <td><?= h($config->time_end) ?></td>
         </tr>
         <tr>
             <th><?= __('Created') ?></th>
