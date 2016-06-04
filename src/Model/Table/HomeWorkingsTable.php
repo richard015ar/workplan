@@ -95,4 +95,11 @@ class HomeWorkingsTable extends Table
         $rules->add($rules->existsIn(['user_id'], 'Users'));
         return $rules;
     }
+
+    public function getByCurrentUser($Id) {
+        $homeWorking = $this->find()
+        ->where(['HomeWorkings.user_id' => $Id])
+        ->andWhere(['HomeWorkings.day_work > NOW()']);
+        return $homeWorking;
+    }
 }

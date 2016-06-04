@@ -186,4 +186,24 @@ class HomeWorkingsController extends AppController
         $this->set(compact('response'));
         return;
     }
+
+    public function homeWork() {
+        $response = [
+          'message' => '',
+          'error' => false
+        ];
+        $Id = $this->Auth->user('id');
+        $homeWorking = $this->HomeWorkings->getByCurrentUser($Id);
+        if($homeWorking) {
+            $response['message'] = 'It home workings.';
+            $response['homeWorking'] = $homeWorking;
+            $this->set(compact('response'));
+            return;
+        }
+        if (!$homeWorking)  {
+            $response['message'] = 'It has no home workings';
+            $this->set(compact('response'));
+            return;
+        }
+    }
 }
