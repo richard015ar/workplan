@@ -95,7 +95,7 @@ class PlansTable extends Table
             return false;
         }
         if ($searchTerm != '' || !is_null($searchTerm)) {
-                $plans = $this->find()->contain(['Items'])->matching(
+                $plans = $this->find()->contain(['Items', 'Items.NoteItems'])->matching(
                  'Items' , function ($q) use($searchTerm){
                    return $q->where(['Items.description LIKE' => "%$searchTerm%"]);
                  }
@@ -108,7 +108,7 @@ class PlansTable extends Table
                ])
                ->order(['Plans.created' => $order]);
         } else {
-            $plans = $this->find()->contain(['Items'])
+            $plans = $this->find()->contain(['Items', 'Items.NoteItems'])
                ->where(function ($exp, $q) use ($startDate, $endDate){
                     return $exp->between('Plans.created', $startDate, $endDate);
                 })
