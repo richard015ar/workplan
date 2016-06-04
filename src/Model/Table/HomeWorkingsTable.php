@@ -38,6 +38,22 @@ class HomeWorkingsTable extends Table
     }
 
     /**
+    * This user have a home working this week?
+    */
+    public function hasThisWeek($userId, $day_work) {
+        $weekDayWork = strtotime($day_work);
+        $weekDayWork = date('W', $weekDayWork);
+        $hw = $this->find()->where(['WEEK(HomeWorkings.day_work)' => $weekDayWork]);
+        $hw = $hw->select(['count' => $hw->func()->count('*')]);
+
+        $hw = $hw->toArray();
+        if ($hw[0]->count > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Default validation rules.
      *
      * @param \Cake\Validation\Validator $validator Validator instance.

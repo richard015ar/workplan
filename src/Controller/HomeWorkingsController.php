@@ -52,16 +52,24 @@ class HomeWorkingsController extends AppController
     public function add()
     {
         // this is a return variable
+        /*
+        To Do (TODO) for tomorrow:
+        I can have two home homeworking in same day?
+        */
         $response = [
           'message' => '',
           'error' => false
         ];
         $homeWorking = $this->HomeWorkings->newEntity();
-        if ($this->request->is('post')) {
+        if ($this->request->is('post') && $this->request->data['day_work']) {
             $userId = $this->Auth->user('id');
             $workData['user_id'] = $userId;
             $workData['state'] = 1;
-            $workData['day_work'] = $this->request->data['day_work'];
+            if (
+                strtotime($this->request->data['day_work']) > strtotime(date('Y-m-d')) &&
+                !$this->HomeWorkings->hasThisWeek($this->Auth->user('id'), $this->request->data['day_work'])
+            ) {
+                $workData['day_work'] = $this->request->data['day_work'];
                 $homeWorking = $this->HomeWorkings->patchEntity($homeWorking, $workData);
                 if ($this->HomeWorkings->save($homeWorking)) {
                     $response['message'] = 'The home working has been saved.';
@@ -69,12 +77,13 @@ class HomeWorkingsController extends AppController
                     $this->set(compact('response'));
                     return;
                 }
-                $response['message'] = 'The home working could not be saved. Please, try again.';
-                $response['error'] = true;
-                $this->set(compact('response'));
-                return;
             }
+            $response['message'] = 'The home working could not be saved. Please, try again.';
+            $response['error'] = true;
+            $this->set(compact('response'));
+            return;
         }
+    }
     /**
      * Edit method
      *
