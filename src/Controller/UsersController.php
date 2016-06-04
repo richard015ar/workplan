@@ -147,35 +147,39 @@ class UsersController extends AppController
         ];
 
         if ($this->request->is(['put'])) {
-            if($this->request->data['password'] && $this->request->data['email'] &&
-            $this->request->data['full_name'] && $this->request->data['avatar_url']) {
+            if($this->request->data['email'] && $this->request->data['full_name']) {
                 $user = $this->Users->get($id);
+                $user->id = intval($id);
                 if($user->id == $this->Auth->user('id') || $this->Auth->user('role') == 1 ) {
                     if(isset($this->request->data['password'])) {
                         $user->password = $this->request->data['password'];
+                    }
+                    if ($user->email != $this->request->data['email']) {
                         $user->email = $this->request->data['email'];
-                        $user->full_name = $this->request->data['full_name'];
-                        $user->avatar_url = $this->request->data['avatar_url'];
-                        if ($this->Users->save($user)) {
-                            $response['message'] = 'The user has been saved.';
-                            $response['user'] = $user;
-                            $this->set(compact('response'));
-                            return;
-                        }
-                        $response['message'] = 'error. The user not has been saved.';
-                        $response['error'] = true;
+                    }
+                    $user->full_name = $this->request->data['full_name'];
+                    $user->isNew(false);
+                    if ($this->Users->save($user)) {
+                        $response['message'] = 'The user has been saved.';
+                        $response['user'] = $user;
                         $this->set(compact('response'));
                         return;
                     }
+                    $response['message'] = 'The user cannot been saved.';
+                    $response['error'] = true;
+                    $this->set(compact('response'));
+                    return;
                 } else {
                     $response['message'] = "You don't authorized";
                     $response['error'] = true;
                     $this->set(compact('response'));
                     return;
                 }
-            } else {
-                $response['message'] = 'All fields is required';
             }
+            $response['message'] = 'All fields is required';
+            $response['error'] = true;
+            $this->set(compact('response'));
+            return;
         }
     }
     /**
