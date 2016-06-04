@@ -164,15 +164,4 @@ class EmployeesController extends AppController
         $this->set(compact('response'));
         return;
     }
-
-    public function sendMail()
-    {
-        $plans = $this->Employees->getEmployeeNotPlans();
-
-        foreach($plans as $plan) {
-            $this->out();
-            $this->out();
-            $this->out();
-        }
-    }
 }

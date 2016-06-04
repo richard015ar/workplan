@@ -138,27 +138,45 @@ class UsersController extends AppController
      * @return \Cake\Network\Response|void Redirects on successful edit, renders view otherwise.
      * @throws \Cake\Network\Exception\NotFoundException When record not found.
      */
-    public function edit($id)
+    public function edit($id = null)
     {
         // this is a return variable
         $response = [
           'message' => '',
           'error' => false
         ];
-        $user = $this->Users->get($id);
+
         if ($this->request->is(['put'])) {
-            $user = $this->Users->patchEntity($user, $this->request->data);
-            if ($this->Users->save($user)) {
-                $response['message'] = 'The user has been saved.';
-                $response['user'] = $user;
-                $this->set(compact('response'));
-                return;
+            if($this->request->data['password'] && $this->request->data['email'] &&
+            $this->request->data['full_name'] && $this->request->data['avatar_url']) {
+                $user = $this->Users->get($id);
+                if($user->id == $this->Auth->user('id') || $this->Auth->user('role') == 1 ) {
+                    if(isset($this->request->data['password'])) {
+                        $user->password = $this->request->data['password'];
+                        $user->email = $this->request->data['email'];
+                        $user->full_name = $this->request->data['full_name'];
+                        $user->avatar_url = $this->request->data['avatar_url'];
+                        if ($this->Users->save($user)) {
+                            $response['message'] = 'The user has been saved.';
+                            $response['user'] = $user;
+                            $this->set(compact('response'));
+                            return;
+                        }
+                        $response['message'] = 'error. The user not has been saved.';
+                        $response['error'] = true;
+                        $this->set(compact('response'));
+                        return;
+                    }
+                } else {
+                    $response['message'] = "You don't authorized";
+                    $response['error'] = true;
+                    $this->set(compact('response'));
+                    return;
+                }
+            } else {
+                $response['message'] = 'All fields is required';
             }
         }
-        $response['error'] = true;
-        $response['message'] = 'Error saving user';
-        $this->set(compact('response'));
-        return;
     }
     /**
      * Delete method
