@@ -95,15 +95,17 @@ class PlansTable extends Table
             return false;
         }
         if ($searchTerm != '' || !is_null($searchTerm)) {
-            $plans = $this->find()->contain([
-                 'Items' => function ($q) use($searchTerm){
+                $plans = $this->find()->contain(['Items'])->matching(
+                 'Items' , function ($q) use($searchTerm){
                    return $q->where(['Items.description LIKE' => "%$searchTerm%"]);
                  }
-             ]);
+             );
                $plans = $plans->where(function ($exp, $q) use ($startDate, $endDate) {
                     return $exp->between('Plans.created', $startDate, $endDate);
                 });
-               $plans = $plans->where(['Plans.employee_id' => $employeeId])
+               $plans = $plans->where([
+                   'Plans.employee_id' => $employeeId
+               ])
                ->order(['Plans.created' => $order]);
         } else {
             $plans = $this->find()->contain(['Items'])

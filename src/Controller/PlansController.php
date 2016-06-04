@@ -141,7 +141,7 @@ class PlansController extends AppController
                     $itemEntity = $this->Plans->Items->newEntity();
                     $itemsData['plan_id'] = $plan->id;
                     $itemsData['state'] = 1;
-                    $itemsData['description'] = $item[0]['description'];
+                    $itemsData['description'] = $item;
                     $itemEntity = $this->Plans->Items->patchEntity($itemEntity, $itemsData);
                     if ($this->Plans->Items->save($itemEntity)) {
                         $itemToReturn[] = $itemEntity;
@@ -174,7 +174,8 @@ class PlansController extends AppController
                 "description": "Meeting with Julio",
                 "created": "2016-05-25T18:23:30+0000",
                 "modified": "2016-05-25T18:23:30+0000",
-                "id": 15
+                "id": 15,
+                "note" : 'This is a note for this Item'
               },
               {
                 "plan_id": 12,
@@ -186,14 +187,8 @@ class PlansController extends AppController
               }
          ],
         'newItems' : [
-                {
-                    description: 'Meeting with Hector',
-                    state : 1
-                },
-                {
-                    description: 'Fixing bugs in production',
-                    state : 2
-                },
+            'Meeting with Hector',
+            'Fixing bugs in production',
         ]
     }
     */
@@ -224,8 +219,17 @@ class PlansController extends AppController
 
         // We need change each state of current items
         foreach ($this->request->data['items'] as $item) {
-            $itemEntity = $this->Plans->Items->newEntity();
-            $itemEntity = $this->Plans->Items->patchEntity($itemEntity, $item);
+            if ($item['note']) { // If have note this item we need save.
+                $notePlan = $item['note'];
+                unset($item['note']);
+                $noteItemEntity = $this->Plans->Items->NoteItems->newEntity();
+                $noteItemEntity->item_id = intval($item['id']);
+                $noteItemEntity->note = $notePlan;
+                $noteItemEntity->user_id = intval($this->Auth->user('id'));
+                $this->Plans->Items->NoteItems->save($noteItemEntity);
+            }
+            $itemEntity = $this->Plans->Items->newEntity($item);
+            $itemEntity->id = intval($item['id']);
             $itemEntity->modified = date('Y-m-d H:i:s');
             $this->Plans->Items->save($itemEntity);
             $response['items'][] = $itemEntity;
@@ -239,8 +243,8 @@ class PlansController extends AppController
             foreach ($this->request->data['newItems'] as $newItem) {
                 $itemEntity = $this->Plans->Items->newEntity();
                 $itemsData['plan_id'] = $planId;
-                $itemsData['state'] = $newItem['state'];
-                $itemsData['description'] = $newItem['description'];
+                $itemsData['state'] = 2;
+                $itemsData['description'] = $newItem;
                 $itemEntity = $this->Plans->Items->patchEntity($itemEntity, $itemsData);
                 $this->Plans->Items->save($itemEntity);
                 $response['newItems'][] = $itemEntity;
