@@ -34,16 +34,6 @@ class PlansController extends AppController
      * @return \Cake\Network\Response|null
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($id = null)
-    {
-        $plan = $this->Plans->get($id, [
-            'contain' => ['Employees', 'Items', 'NotePlans']
-        ]);
-
-        $this->set('plan', $plan);
-        $this->set('_serialize', ['plan']);
-    }
-
     /**
      * Add method
      *
@@ -100,14 +90,16 @@ class PlansController extends AppController
           'message' => '',
           'error' => false
         ];
-        $plan = $this->Plans->get($id);
-        $this->request->allowMethod(['delete']);
-        if($plan->employee_id == $this->Plans->Employees->getIdByUserId($this->Auth->user('id'))) {
-            if ($this->Plans->delete($plan)) {
-                $response['message'] = 'The plan has been deleted.';
-                $response['plan'] = $plan;
-                $this->set(compact('response'));
-                return;
+        if ($this->request->is(['put'])) {
+            $plan = $this->Plans->get($id);
+            if($plan->employee_id == $this->Plans->Employees->getIdByUserId($this->Auth->user('id'))) {
+                $plan->deleted = date('Y-m-d H:i:s');
+                if ($this->Plans->save($plan)) {
+                    $response['message'] = 'The plan has been deleted.';
+                    $response['plan'] = $plan;
+                    $this->set(compact('response'));
+                    return;
+                }
             }
         }
         $response['message'] = 'The plan could not be deleted. Please, try again.';

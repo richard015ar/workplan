@@ -15,17 +15,6 @@ class NoteItemsController extends AppController
      *
      * @return \Cake\Network\Response|null
      */
-    public function index()
-    {
-        $this->paginate = [
-            'contain' => ['Items', 'Users']
-        ];
-        $noteItems = $this->paginate($this->NoteItems);
-
-        $this->set(compact('noteItems'));
-        $this->set('_serialize', ['noteItems']);
-    }
-
     /**
      * View method
      *
@@ -33,16 +22,6 @@ class NoteItemsController extends AppController
      * @return \Cake\Network\Response|null
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($id = null)
-    {
-        $noteItem = $this->NoteItems->get($id, [
-            'contain' => ['Items', 'Users']
-        ]);
-
-        $this->set('noteItem', $noteItem);
-        $this->set('_serialize', ['noteItem']);
-    }
-
     /**
      * Add method
      *
@@ -130,14 +109,16 @@ class NoteItemsController extends AppController
           'message' => '',
           'error' => false
         ];
-        $noteItem = $this->NoteItems->get($id);
-        $this->request->allowMethod(['delete']);
-        if($noteItem->user_id == $this->Auth->user('id')) {
-            if ($this->NoteItems->delete($noteItem)) {
-                $response['message'] = 'The note item has been deleted.';
-                $response['noteItem'] = $noteItem;
-                $this->set(compact('response'));
-                return;
+        if ($this->request->is(['put'])) {
+            $noteItem = $this->NoteItems->get($id);
+            if($noteItem->user_id == $this->Auth->user('id')) {
+                $noteItem->deleted = date('Y-m-d H:i:s');
+                if ($this->NoteItems->save($noteItem)) {
+                    $response['message'] = 'The note item has been deleted.';
+                    $response['noteItem'] = $noteItem;
+                    $this->set(compact('response'));
+                    return;
+                }
             }
         }
         $response['error'] = true;

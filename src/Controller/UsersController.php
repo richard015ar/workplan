@@ -54,13 +54,6 @@ class UsersController extends AppController
      *
      * @return \Cake\Network\Response|null
      */
-    public function index()
-    {
-        $users = $this->paginate($this->Users);
-
-        $this->set(compact('users'));
-        //$this->set('_serialize', ['users']);
-    }
 
     /**
      * View method
@@ -69,16 +62,6 @@ class UsersController extends AppController
      * @return \Cake\Network\Response|null
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($id = null)
-    {
-        $user = $this->Users->get($id, [
-            'contain' => ['Administrators', 'Employees', 'NoteEmployees', 'NoteItems', 'NotePlans']
-        ]);
-
-        $this->set('user', $user);
-        $this->set('_serialize', ['user']);
-    }
-
     /**
      * Add method
      *
@@ -195,13 +178,17 @@ class UsersController extends AppController
           'message' => '',
           'error' => false
         ];
-        $user = $this->Users->get($id);
-        $this->request->allowMethod(['delete']);
-        if ($this->Users->delete($user)) {
-            $response['message'] = 'The user has been deleted.';
-            $response['user'] = $user;
-            $this->set(compact('response'));
-            return;
+        if ($this->request->is(['put'])) {
+            $user = $this->Users->get($id);
+            if($user->id == $this->Auth->user('id') || $this->Auth->user('role') == 1 ) {
+                $user->deleted = date('Y-m-d H:i:s');
+                if ($this->Users->save($user)) {
+                    $response['message'] = 'The user has been deleted.';
+                    $response['user'] = $user;
+                    $this->set(compact('response'));
+                    return;
+                }
+            }
         }
         $response['error'] = true;
         $response['message'] = 'The user could not be deleted. Please, try again.';

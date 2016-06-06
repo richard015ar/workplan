@@ -106,11 +106,17 @@ class PlansTable extends Table
                $plans = $plans->where([
                    'Plans.employee_id' => $employeeId
                ])
+               ->where(function ($exp, $q) {
+                   return $exp->isNull('deleted');
+               })
                ->order(['Plans.created' => $order]);
         } else {
             $plans = $this->find()->contain(['Items', 'Items.NoteItems'])
                ->where(function ($exp, $q) use ($startDate, $endDate){
                     return $exp->between('Plans.created', $startDate, $endDate);
+                })
+                ->where(function ($exp, $q) {
+                    return $exp->isNull('deleted');
                 })
                ->andWhere(['Plans.employee_id' => $employeeId])
                ->order(['Plans.created' => $order]);
@@ -133,12 +139,18 @@ class PlansTable extends Table
                $plans = $plans->where(function ($exp, $q) use ($startDate, $endDate) {
                     return $exp->between('Plans.created', $startDate, $endDate);
                 })
+                ->where(function ($exp, $q) {
+                    return $exp->isNull('deleted');
+                })
                 ->where(['Plans.state' => $state])
                 ->order(['Plans.created' => $order]);
         } else {
             $plans = $this->find()->contain(['Items'])
                ->where(function ($exp, $q) use ($startDate, $endDate){
                     return $exp->between('Plans.created', $startDate, $endDate);
+                })
+                ->where(function ($exp, $q) {
+                    return $exp->isNull('deleted');
                 })
                 ->where(['Plans.state' => $state])
                 ->order(['Plans.created' => $order]);
@@ -148,7 +160,10 @@ class PlansTable extends Table
 //It function find open plans of logged user.
     public function getPlanOpenByEmployee($employeeId) {
         $plan = $this->find()
-        ->where(['state =' => 1])
+        ->where(function ($exp, $q) {
+            return $exp->isNull('deleted');
+        })
+        ->andWhere(['state =' => 1])
         ->andWhere(['Plans.employee_id' => $employeeId]);
         return $plan;
     }

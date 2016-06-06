@@ -102,6 +102,9 @@ class EmployeesTable extends Table
                     return $q->where(['Items.description LIKE' => "%$searchTerm%"]);
                 }
             ]);
+            $employee = $employee->where(function ($exp, $q) {
+                return $exp->isNull('deleted');
+            })
             $employee = $employee->where(function ($exp, $q) use ($startDate, $endDate) {
                 return $exp->between('User.full_name', $startDate, $endDate);
             });
@@ -113,7 +116,10 @@ class EmployeesTable extends Table
                 return $exp->between('Users.full_name', $startDate, $endDate);
             });
             $employee = $employee->where(['Employees.user_id'])
-            ->order(['Users.full_name' => $order]);
+            ->order(['Users.full_name' => $order])
+            ->andWhere(function ($exp, $q) {
+                return $exp->isNull('deleted');
+            })
         }
         return $employee;
     }

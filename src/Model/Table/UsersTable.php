@@ -149,14 +149,29 @@ class UsersTable extends Table
 
     public function getSearch($search = null) {
         $items = $this->Employees->Plans->Items->find()
+                    ->where(function ($exp, $q) {
+                        return $exp->isNull('deleted');
+                    })
                     ->where(['description LIKE ' => "%$search%"]);
         $notePlans = $this->NotePlans->find()
+                    ->where(function ($exp, $q) {
+                        return $exp->isNull('deleted');
+                    })
                     ->where(['note LIKE ' => "%$search%"]);
         $noteEmployees = $this->NoteEmployees->find()
+                    ->where(function ($exp, $q) {
+                        return $exp->isNull('deleted');
+                    })
                     ->where(['note LIKE ' => "%$search%"]);
         $noteItems = $this->NoteItems->find()
+                    ->where(function ($exp, $q) {
+                        return $exp->isNull('deleted');
+                    })
                     ->where(['note LIKE ' => "%$search%"]);
         $users = $this->find()
+                    ->where(function ($exp, $q) {
+                        return $exp->isNull('deleted');
+                    })
                     ->where(['username LIKE ' => "%$search%"])
                     ->orWhere(['email LIKE ' => "%$search%"])
                     ->orWhere(['full_name LIKE ' => "%$search%"]);

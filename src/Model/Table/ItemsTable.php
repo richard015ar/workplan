@@ -77,7 +77,7 @@ class ItemsTable extends Table
         $rules->add($rules->existsIn(['plan_id'], 'Plans'));
         return $rules;
     }
-    
+
     public function getItemsByEmployeeId($startDate, $endDate, $order, $stateItem = null, $searchTerm = null, $employeeId) {
         if (is_null($startDate) || is_null($endDate) || is_null($order) || is_null($employeeId)) {
             $response['message'] = 'All data must be filled';
@@ -91,6 +91,9 @@ class ItemsTable extends Table
             $items = $items->contain(['Plans'  => function ($q) use ($employeeId) {
                 return $q->where(['Plans.employee_id' => $employeeId]);
             }]);
+            $items = $items->where(function ($exp, $q) {
+                return $exp->isNull('deleted');
+            });
             $items = $items->order(['Plans.created' => $order]);
         } else {
             $items = $this->find()->contain(['Plans'  => function ($q) use ($employeeId) {
@@ -99,11 +102,17 @@ class ItemsTable extends Table
             ->where(function ($exp, $q) use ($startDate, $endDate) {
                 return $exp->between('Items.created', $startDate, $endDate);
             })
+            ->where(function ($exp, $q) {
+                return $exp->isNull('deleted');
+            })
             ->order(['Plans.created' => $order]);
         }
         if (!is_null($stateItem)) {
             $stateItem = intval($stateItem);
             $items = $items->where(['Items.state' => $stateItem]);
+            $items = $items->andWhere(function ($exp, $q) {
+                return $exp->isNull('deleted');
+            });
         }
         return $items;
     }

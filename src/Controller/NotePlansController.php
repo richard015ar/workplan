@@ -15,17 +15,6 @@ class NotePlansController extends AppController
      *
      * @return \Cake\Network\Response|null
      */
-    public function index()
-    {
-        $this->paginate = [
-            'contain' => ['Users', 'Plans']
-        ];
-        $notePlans = $this->paginate($this->NotePlans);
-
-        $this->set(compact('notePlans'));
-        $this->set('_serialize', ['notePlans']);
-    }
-
     /**
      * View method
      *
@@ -33,16 +22,6 @@ class NotePlansController extends AppController
      * @return \Cake\Network\Response|null
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($id = null)
-    {
-        $notePlan = $this->NotePlans->get($id, [
-            'contain' => ['Users', 'Plans']
-        ]);
-
-        $this->set('notePlan', $notePlan);
-        $this->set('_serialize', ['notePlan']);
-    }
-
     /**
      * Add method
      *
@@ -99,14 +78,16 @@ class NotePlansController extends AppController
           'message' => '',
           'error' => false
         ];
-        $notePlan = $this->NotePlans->get($id);
-        $this->request->allowMethod(['delete']);
-        if($notePlan->user_id == $this->Auth->user('id')) {
-            if ($this->NotePlans->delete($notePlan)) {
-                $response['message'] = 'The note plan has been deleted.';
-                $response['notePlan'] = $notePlan;
-                $this->set(compact('response'));
-                return;
+        if ($this->request->is(['put'])) {
+            $notePlan = $this->NotePlans->get($id);
+            if($notePlan->user_id == $this->Auth->user('id')) {
+                $notePlan->deleted = date('Y-m-d H:i:s');
+                if ($this->NotePlans->save($notePlan)) {
+                    $response['message'] = 'The note plan has been deleted.';
+                    $response['notePlan'] = $notePlan;
+                    $this->set(compact('response'));
+                    return;
+                }
             }
         }
         $response['error'] = true;

@@ -52,7 +52,6 @@ class HomeWorkingsTable extends Table
         }
         return false;
     }
-
     /**
      * Default validation rules.
      *
@@ -98,6 +97,9 @@ class HomeWorkingsTable extends Table
 
     public function getByCurrentUser($Id) {
         $homeWorking = $this->find()
+        ->where(function ($exp, $q) {
+            return $exp->isNull('deleted');
+        })
         ->where(['HomeWorkings.user_id' => $Id])
         ->andWhere(['HomeWorkings.day_work > NOW()']);
         return $homeWorking;
