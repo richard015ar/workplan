@@ -182,6 +182,7 @@ class UsersController extends AppController
             $user = $this->Users->get($id);
             if($user->id == $this->Auth->user('id') || $this->Auth->user('role') == 1 ) {
                 $user->deleted = date('Y-m-d H:i:s');
+                $user->api_key_plain = null;
                 if ($this->Users->save($user)) {
                     $response['message'] = 'The user has been deleted.';
                     $response['user'] = $user;

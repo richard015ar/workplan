@@ -267,7 +267,7 @@ class PlansController extends AppController
         $order = $this->request->query('order');
         $employeeId = $this->Plans->Employees->getIdByUserId($this->Auth->user('id'));
         $limit = $this->request->query('limit');
-        if (!$limit) {
+        if (!$limit) { 
             $limit = 10;
         }
         $plans = $this->Plans->getPlansByEmployeeId($startDate, $endDate, $order, $searchTerm, $employeeId);
@@ -278,7 +278,7 @@ class PlansController extends AppController
         }
         $response['error'] = false;
         $config = [
-            'limit' => $limit,
+            'limit' => $limit
         ];
         $response['plans'] = $this->Paginator->paginate($plans, $config);
         $response['total'] = count($response['plans']);

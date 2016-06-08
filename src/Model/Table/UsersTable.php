@@ -149,32 +149,43 @@ class UsersTable extends Table
 
     public function getSearch($search = null) {
         $items = $this->Employees->Plans->Items->find()
+                    ->select(['id','description', 'state', 'created'])
                     ->where(function ($exp, $q) {
                         return $exp->isNull('deleted');
                     })
                     ->where(['description LIKE ' => "%$search%"]);
         $notePlans = $this->NotePlans->find()
+                    ->select(['id', 'created','note'])
                     ->where(function ($exp, $q) {
                         return $exp->isNull('deleted');
                     })
                     ->where(['note LIKE ' => "%$search%"]);
         $noteEmployees = $this->NoteEmployees->find()
+                    ->select(['id', 'created', 'note'])
                     ->where(function ($exp, $q) {
                         return $exp->isNull('deleted');
                     })
                     ->where(['note LIKE ' => "%$search%"]);
         $noteItems = $this->NoteItems->find()
+                    ->select(['id', 'created','note'])
                     ->where(function ($exp, $q) {
                         return $exp->isNull('deleted');
                     })
                     ->where(['note LIKE ' => "%$search%"]);
         $users = $this->find()
+                    ->select(['username', 'email', 'full_name'])
+                    ->where(['username LIKE ' => "%$search%"])
+                    ->andWhere(function ($exp, $q) {
+                        return $exp->isNull('deleted');
+                    })
+                    ->orWhere(['email LIKE ' => "%$search%"])
                     ->where(function ($exp, $q) {
                         return $exp->isNull('deleted');
                     })
-                    ->where(['username LIKE ' => "%$search%"])
-                    ->orWhere(['email LIKE ' => "%$search%"])
-                    ->orWhere(['full_name LIKE ' => "%$search%"]);
+                    ->orWhere(['full_name LIKE ' => "%$search%"])
+                    ->where(function ($exp, $q) {
+                        return $exp->isNull('deleted');
+                    });
 
         return [
             'Items' => $items,

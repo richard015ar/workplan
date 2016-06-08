@@ -1,9 +1,8 @@
-
 <?php
 namespace App\Controller;
 
 use App\Controller\AppController;
-/** 
+/**
  * Administrators Controller
  *
  * @property \App\Model\Table\AdministratorsTable $Administrators

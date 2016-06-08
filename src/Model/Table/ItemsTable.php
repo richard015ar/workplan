@@ -89,29 +89,40 @@ class ItemsTable extends Table
                 return $exp->between('Items.created', $startDate, $endDate);
             });
             $items = $items->contain(['Plans'  => function ($q) use ($employeeId) {
-                return $q->where(['Plans.employee_id' => $employeeId]);
-            }]);
-            $items = $items->where(function ($exp, $q) {
-                return $exp->isNull('deleted');
-            });
+                return $q->where(['Plans.employee_id' => $employeeId])
+                         ->select(['id', 'state', 'created'])
+                         ->where(function ($exp, $q) {
+                             return $exp->isNull('Plans.deleted');
+                         });
+                     }])
+                     ->select(['id', 'state', 'description', 'created'])
+                     ->where(function ($exp, $q) {
+                         return $exp->isNull('Items.deleted');
+                     });
             $items = $items->order(['Plans.created' => $order]);
         } else {
             $items = $this->find()->contain(['Plans'  => function ($q) use ($employeeId) {
-                return $q->where(['Plans.employee_id' => $employeeId]);
-            }])
-            ->where(function ($exp, $q) use ($startDate, $endDate) {
-                return $exp->between('Items.created', $startDate, $endDate);
-            })
-            ->where(function ($exp, $q) {
-                return $exp->isNull('deleted');
-            })
-            ->order(['Plans.created' => $order]);
+                 return $q->where(['Plans.employee_id' => $employeeId])
+                          ->select(['id', 'state', 'created'])
+                          ->where(function ($exp, $q) {
+                              return $exp->isNull('Plans.deleted');
+                          });
+                      }])
+                      ->where(function ($exp, $q) use ($startDate, $endDate) {
+                          return $exp->between('Items.created', $startDate, $endDate);
+                      })
+                      ->select(['id', 'state', 'description', 'created'])
+                      ->where(function ($exp, $q) {
+                          return $exp->isNull('Items.deleted');
+                      })
+                      ->order(['Plans.created' => $order]);
         }
         if (!is_null($stateItem)) {
             $stateItem = intval($stateItem);
             $items = $items->where(['Items.state' => $stateItem]);
+            $items = $items->select(['id', 'state', 'description', 'created']);
             $items = $items->andWhere(function ($exp, $q) {
-                return $exp->isNull('deleted');
+                return $exp->isNull('Items.deleted');
             });
         }
         return $items;

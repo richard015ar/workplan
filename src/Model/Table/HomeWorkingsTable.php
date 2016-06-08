@@ -97,8 +97,9 @@ class HomeWorkingsTable extends Table
 
     public function getByCurrentUser($Id) {
         $homeWorking = $this->find()
+        ->select(['id', 'state', 'day_work'])
         ->where(function ($exp, $q) {
-            return $exp->isNull('deleted');
+            return $exp->isNull('HomeWorkings.deleted');
         })
         ->where(['HomeWorkings.user_id' => $Id])
         ->andWhere(['HomeWorkings.day_work > NOW()']);
