@@ -26,16 +26,22 @@ class UsersController extends AppController
           'error' => false
         ];
         if ($this->request->is('post')) {
-            // $user = $this->Auth->identify();
             $username = $this->request->data['username'];
             $password = $this->request->data['password'];
             $realUser = $this->Users->getUserByUsernameAndPassword($username, $password);
-            if ($realUser) {
-                $this->Auth->setUser($realUser);
-                $response['message'] = 'User identified';
-                $response['user'] = $realUser;
-                $this->set(compact('response'));
-                return;
+            if(is_null($realUser[0]['deleted'])) {
+                if ($realUser) {
+                    $this->Auth->setUser($realUser);
+                    unset($realUser[0]['api_key_plain']);
+                    unset($realUser[0]['created']);
+                    unset($realUser[0]['deleted']);
+                    unset($realUser[0]['modified']);
+                    unset($realUser[0]['last_login']);
+                    $response['message'] = 'User identified';
+                    $response['user'] = $realUser;
+                    $this->set(compact('response'));
+                    return;
+                }
             }
             $response['message'] = 'Invalid username or password, try again';
             $response['error'] = true;
@@ -183,6 +189,7 @@ class UsersController extends AppController
             if($user->id == $this->Auth->user('id') || $this->Auth->user('role') == 1 ) {
                 $user->deleted = date('Y-m-d H:i:s');
                 $user->api_key_plain = null;
+                $user->api_key = null;
                 if ($this->Users->save($user)) {
                     $response['message'] = 'The user has been deleted.';
                     $response['user'] = $user;

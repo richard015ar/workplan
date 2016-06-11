@@ -68,11 +68,6 @@ class HomeWorkingsTable extends Table
             ->integer('state')
             ->requirePresence('state', 'create')
             ->notEmpty('state');
-            //->notEmpty('state', 'A state is required');
-            //->add('state', 'inList', [
-            //    'rule' => ['inList', [1, 2, 3]], // 1 = pendiente , 2 = Aprovado , 3 = rechazado
-            //    'message' => 'Please enter a valid state'
-            //]);
 
         $validator
             ->dateTime('day_work')
