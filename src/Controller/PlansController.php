@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Mailer\Email;
 
 /**
  * Plans Controller
@@ -17,15 +18,6 @@ class PlansController extends AppController
             'Plans.created' => 'asc'
         ]
     ];
-
-    /**
-     * Index method
-     *
-     * @return \Cake\Network\Response|null
-     */
-    public function index()
-    {
-    }
 
     /**
      * View method
@@ -159,6 +151,33 @@ class PlansController extends AppController
         }
     }
 
+    public function sendReminderToEmployee() {
+        // Remember close a opened Plan
+        if (date('H') == 19) {
+            $op = $this->Plans->$this->Plans->getPlans('2016-05-20 00:00:00', date('Y-m-d h:m:i'), 'ASC', '', 1);
+            $messagePlanOpened = "Remember close the plan of today!";
+            foreach ($op as $plan) {
+                // $email = new Email('default');
+                // $email->from(['hector@taggify.net' => 'Plainify'])
+                //     ->to($plan->employee->user->email)
+                //     ->subject('Close the plan of today')
+                //     ->send($messagePlanOpened);
+            }
+        }
+        if (date('H') == '00') {
+            // Remember open a new Plan
+            $op = $this->Plans->getPlans('2016-05-20 00:00:00', date('Y-m-d h:m:i'), 'ASC', '', 2);
+            $messageNewPlan = "Remember open a new plan of today!";
+            foreach ($op as $plan) {
+                // $email = new Email('default');
+                // $email->from(['hector@taggify.net' => 'Plainify'])
+                //     ->to($plan->employee->user->email)
+                //     ->subject('Open the plan of today')
+                //     ->send($messageNewPlan);
+            }
+        }
+    }
+
     /*
     This action if for close the plan (to final of the day).
     The employee close the plan changing each state of item and he con
@@ -222,11 +241,13 @@ class PlansController extends AppController
             if ($item['note']) { // If have note this item we need save.
                 $notePlan = $item['note'];
                 unset($item['note']);
-                $noteItemEntity = $this->Plans->Items->NoteItems->newEntity();
-                $noteItemEntity->item_id = intval($item['id']);
-                $noteItemEntity->note = $notePlan;
-                $noteItemEntity->user_id = intval($this->Auth->user('id'));
-                $this->Plans->Items->NoteItems->save($noteItemEntity);
+                if (!$this->Plans->Items->NoteItems->existNote($item['id'], $notePlan)) {
+                    $noteItemEntity = $this->Plans->Items->NoteItems->newEntity();
+                    $noteItemEntity->item_id = intval($item['id']);
+                    $noteItemEntity->note = $notePlan;
+                    $noteItemEntity->user_id = intval($this->Auth->user('id'));
+                    $this->Plans->Items->NoteItems->save($noteItemEntity);
+                }
             }
             $itemEntity = $this->Plans->Items->newEntity($item);
             $itemEntity->id = intval($item['id']);
@@ -315,7 +336,7 @@ class PlansController extends AppController
         if (!$limit) {
             $limit = 10;
         }
-        $plans = $this->Plans->getPlans($startDate, $endDate, $order, $searchTerm = null, $state);
+        $plans = $this->Plans->getPlans($startDate, $endDate, $order, $searchTerm, $state);
         if (!$plans)  {
             $response['message'] = 'All fields must be fill';
             $this->set(compact('response'));

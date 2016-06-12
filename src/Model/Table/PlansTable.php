@@ -125,7 +125,7 @@ class PlansTable extends Table
             return false;
         }
         if ($searchTerm != '' || !is_null($searchTerm)) {
-            $plans = $this->find()->contain([
+            $plans = $this->find()->contain(['Employees.Users',
                  'Items' => function ($q) use($searchTerm){
                    return $q->where(['Items.description LIKE' => "%$searchTerm%"]);
                  }
@@ -136,7 +136,7 @@ class PlansTable extends Table
                 ->where(['Plans.state' => $state])
                 ->order(['Plans.created' => $order]);
         } else {
-            $plans = $this->find()->contain(['Items'])
+            $plans = $this->find()->contain(['Items', 'Employees.Users'])
                ->where(function ($exp, $q) use ($startDate, $endDate){
                     return $exp->between('Plans.created', $startDate, $endDate);
                 })

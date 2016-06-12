@@ -43,7 +43,9 @@ class HomeWorkingsTable extends Table
     public function hasThisWeek($userId, $day_work) {
         $weekDayWork = strtotime($day_work);
         $weekDayWork = date('W', $weekDayWork);
-        $hw = $this->find()->where(['WEEK(HomeWorkings.day_work)' => $weekDayWork]);
+        $hw = $this->find()
+                    ->where(['WEEK(HomeWorkings.day_work)' => $weekDayWork])
+                    ->andWhere(['HomeWorkings.state !=' => 3]);
         $hw = $hw->select(['count' => $hw->func()->count('*')]);
 
         $hw = $hw->toArray();
@@ -95,6 +97,7 @@ class HomeWorkingsTable extends Table
         $rules->add($rules->existsIn(['user_id'], 'Users'));
         return $rules;
     }
+
 
     public function getByCurrentUser($Id) {
         $homeWorking = $this->find()

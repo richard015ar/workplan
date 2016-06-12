@@ -42,6 +42,18 @@ class NoteItemsTable extends Table
         ]);
     }
 
+    public function existNote($itemId, $note) {
+        $ni = $this->find()
+                    ->where(['NoteItems.item_id' => $itemId])
+                    ->andWhere(['NoteItems.note' => $note]);
+        $ni = $ni->select(['count' => $ni->func()->count('*')]);
+        $ni = $ni->toArray();
+        if ($ni[0]->count > 0) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Default validation rules.
      *

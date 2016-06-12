@@ -187,7 +187,7 @@ class HomeWorkingsController extends AppController
         return;
     }
 
-    public function homeWork() {
+    public function getByCurrentUser() {
         $response = [
           'message' => '',
           'error' => false
@@ -195,13 +195,13 @@ class HomeWorkingsController extends AppController
         $Id = $this->Auth->user('id');
         $homeWorking = $this->HomeWorkings->getByCurrentUser($Id);
         if($homeWorking) {
-            $response['message'] = 'It home workings.';
+            $response['message'] = '';
             $response['homeWorking'] = $homeWorking;
             $this->set(compact('response'));
             return;
         }
         if (!$homeWorking)  {
-            $response['message'] = 'It has no home workings';
+            $response['message'] = 'Without future home workings';
             $this->set(compact('response'));
             return;
         }
