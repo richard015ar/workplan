@@ -16,17 +16,6 @@ class HomeWorkingsController extends AppController
      *
      * @return \Cake\Network\Response|null
      */
-    public function index()
-    {
-        $this->paginate = [
-            'contain' => ['Users']
-        ];
-        $homeWorkings = $this->paginate($this->HomeWorkings);
-
-        $this->set(compact('homeWorkings'));
-        $this->set('_serialize', ['homeWorkings']);
-    }
-
     /**
      * View method
      *
@@ -34,17 +23,7 @@ class HomeWorkingsController extends AppController
      * @return \Cake\Network\Response|null
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($id = null)
-    {
-        $homeWorking = $this->HomeWorkings->get($id, [
-            'contain' => ['Users']
-        ]);
-
-        $this->set('homeWorking', $homeWorking);
-        $this->set('_serialize', ['homeWorking']);
-    }
-
-    /**
+     /**
      * Add method
      *
      * @return \Cake\Network\Response|void Redirects on successful add, renders view otherwise.
@@ -171,14 +150,16 @@ class HomeWorkingsController extends AppController
           'message' => '',
           'error' => false
         ];
-        $homeWorking = $this->HomeWorkings->get($id);
-        $this->request->allowMethod(['delete']);
-        if ($homeWorking->user_id == $this->Auth->user('id')) {
-            if ($this->HomeWorkings->delete($homeWorking)) {
-                $response['message'] = 'The home working has been deleted.';
-                $response['homeWorking'] = $homeWorking;
-                $this->set(compact('response'));
-                return;
+        if ($this->request->is(['put'])) {
+            $homeWorking = $this->HomeWorkings->get($id);
+            if ($homeWorking->user_id == $this->Auth->user('id')) {
+                $homeWorking->deleted = date('Y-m-d H:i:s');
+                if ($this->HomeWorkings->save($homeWorking)) {
+                    $response['message'] = 'The home working has been deleted.';
+                    $response['homeWorking'] = $homeWorking;
+                    $this->set(compact('response'));
+                    return;
+                }
             }
         }
         $response['message'] = 'The home working could not be deleted. Please, try again.';
@@ -187,7 +168,7 @@ class HomeWorkingsController extends AppController
         return;
     }
 
-    public function getByCurrentUser() {
+    public function getByCurrentUser() { 
         $response = [
           'message' => '',
           'error' => false
@@ -195,7 +176,7 @@ class HomeWorkingsController extends AppController
         $Id = $this->Auth->user('id');
         $homeWorking = $this->HomeWorkings->getByCurrentUser($Id);
         if($homeWorking) {
-            $response['message'] = '';
+            $response['message'] = 'It home workings.';
             $response['homeWorking'] = $homeWorking;
             $this->set(compact('response'));
             return;

@@ -30,16 +30,6 @@ class ItemsController extends AppController
      * @return \Cake\Network\Response|null
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($id = null)
-    {
-        $item = $this->Items->get($id, [
-            'contain' => ['Plans', 'NoteItems']
-        ]);
-
-        $this->set('item', $item);
-        $this->set('_serialize', ['item']);
-    }
-
     /**
      * Add method
      *
@@ -115,13 +105,15 @@ class ItemsController extends AppController
             'message' => '',
             'error' => false
         ];
-        $item = $this->Items->get($id);
-        $this->request->allowMethod(['delete']);
-        if ($this->Items->delete($item)) {
-            $response['message'] = 'The item has been deleted.';
-            $response['item'] = $item;
-            $this->set(compact('response'));
-            return;
+        if ($this->request->is(['put'])) {
+            $item = $this->Items->get($id);
+            $item->deleted = date('Y-m-d H:i:s');
+            if ($this->Items->save($item)) {
+                $response['message'] = 'The item has been deleted.';
+                $response['item'] = $item;
+                $this->set(compact('response'));
+                return;
+            }
         }
         $response['message'] = 'The item could not be deleted. Please, try again.';
         $response['error'] = true;

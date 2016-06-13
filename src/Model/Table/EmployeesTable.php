@@ -98,22 +98,30 @@ class EmployeesTable extends Table
         }
         if ($searchTerm != '' || !is_null($searchTerm)) {
             $employee = $this->find()->contain([
-                'Plans.Items' => function ($q) use($searchTerm){
-                    return $q->where(['Items.description LIKE' => "%$searchTerm%"]);
+                'Users' => function ($q) use($searchTerm){
+                    return $q->where(['User.full_name LIKE' => "%$searchTerm%"]);
                 }
             ]);
+            $employee = $employee->where(function ($exp, $q) {
+                return $exp->isNull('Users.deleted');
+            });
             $employee = $employee->where(function ($exp, $q) use ($startDate, $endDate) {
-                return $exp->between('User.full_name', $startDate, $endDate);
+                return $exp->between('User.created', $startDate, $endDate);
             });
             $employee = $employee->where(['Employees.user_id'])
+            ->select(['Employees.id', 'Users.full_name', 'Users.username', 'Users.id', 'Users.created', 'Users.email'])
             ->order(['Users.full_name' => $order]);
         } else {
             $employee = $this->find()->contain(['Users'])
             ->where(function ($exp, $q) use ($startDate, $endDate){
-                return $exp->between('Users.full_name', $startDate, $endDate);
+                return $exp->between('Users.created', $startDate, $endDate);
             });
             $employee = $employee->where(['Employees.user_id'])
-            ->order(['Users.full_name' => $order]);
+            ->select(['Employees.id', 'Users.full_name', 'Users.username', 'Users.id', 'Users.created', 'Users.email'])
+            ->order(['Users.full_name' => $order])
+            ->andWhere(function ($exp, $q) {
+                return $exp->isNull('Users.deleted');
+            });
         }
         return $employee;
     }

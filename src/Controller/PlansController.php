@@ -26,16 +26,6 @@ class PlansController extends AppController
      * @return \Cake\Network\Response|null
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($id = null)
-    {
-        $plan = $this->Plans->get($id, [
-            'contain' => ['Employees', 'Items', 'NotePlans']
-        ]);
-
-        $this->set('plan', $plan);
-        $this->set('_serialize', ['plan']);
-    }
-
     /**
      * Add method
      *
@@ -92,14 +82,16 @@ class PlansController extends AppController
           'message' => '',
           'error' => false
         ];
-        $plan = $this->Plans->get($id);
-        $this->request->allowMethod(['delete']);
-        if($plan->employee_id == $this->Plans->Employees->getIdByUserId($this->Auth->user('id'))) {
-            if ($this->Plans->delete($plan)) {
-                $response['message'] = 'The plan has been deleted.';
-                $response['plan'] = $plan;
-                $this->set(compact('response'));
-                return;
+        if ($this->request->is(['put'])) {
+            $plan = $this->Plans->get($id);
+            if($plan->employee_id == $this->Plans->Employees->getIdByUserId($this->Auth->user('id'))) {
+                $plan->deleted = date('Y-m-d H:i:s');
+                if ($this->Plans->save($plan)) {
+                    $response['message'] = 'The plan has been deleted.';
+                    $response['plan'] = $plan;
+                    $this->set(compact('response'));
+                    return;
+                }
             }
         }
         $response['message'] = 'The plan could not be deleted. Please, try again.';
@@ -307,7 +299,7 @@ class PlansController extends AppController
         }
         $response['error'] = false;
         $config = [
-            'limit' => $limit,
+            'limit' => $limit
         ];
         $response['plans'] = $this->Paginator->paginate($plans, $config);
         $response['total'] = count($response['plans']);
@@ -315,7 +307,42 @@ class PlansController extends AppController
         return;
     }
 
-    public function plan()
+    public function getByEmployeeId() {
+        $response = [
+            'error' => true,
+            'message' => ''
+        ];
+        if (!$this->request->is('get') || !$this->request->query('employeeId')) {
+            $response['message'] = 'Invalid request';
+            $this->set(compact('response'));
+            return;
+        }
+        $startDate = $this->request->query('startDate');
+        $endDate = $this->request->query('endDate');
+        $searchTerm = $this->request->query('searchTerm');
+        $order = $this->request->query('order');
+        $employeeId = intval($this->request->query('employeeId'));
+        $limit = $this->request->query('limit');
+        if (!$limit) {
+            $limit = 10;
+        }
+        $plans = $this->Plans->getPlansByEmployeeId($startDate, $endDate, $order, $searchTerm, $employeeId);
+        if (!$plans)  {
+            $response['message'] = 'All fields must be fill';
+            $this->set(compact('response'));
+            return;
+        }
+        $response['error'] = false;
+        $config = [
+            'limit' => $limit
+        ];
+        $response['plans'] = $this->Paginator->paginate($plans, $config);
+        $response['total'] = count($response['plans']);
+        $this->set(compact('response'));
+        return;
+    }
+
+    public function getAllPlans()
     {
         $response = [
             'error' => true,

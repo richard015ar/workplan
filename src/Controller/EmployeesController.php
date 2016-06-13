@@ -22,11 +22,6 @@ class EmployeesController extends AppController
      *
      * @return \Cake\Network\Response|null
      */
-    public function index()
-    {
-
-    }
-
     /**
      * View method
      *
@@ -34,43 +29,11 @@ class EmployeesController extends AppController
      * @return \Cake\Network\Response|null
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($id = null)
-    {
-        $employee = $this->Employees->get($id, [
-            'contain' => ['Users', 'NoteEmployees', 'Plans']
-        ]);
-
-        $this->set('employee', $employee);
-        $this->set('_serialize', ['employee']);
-    }
-
-    /**
+     /**
      * Add method
      *
      * @return \Cake\Network\Response|void Redirects on successful add, renders view otherwise.
      */
-    public function add()
-    {
-        $response = [
-          'message' => '',
-          'error' => false
-        ];
-        $employee = $this->Employees->newEntity();
-        if ($this->request->is('post')) {
-            $employee = $this->Employees->patchEntity($employee, $this->request->data);
-            if ($this->Employees->save($employee)) {
-                $response['message'] = 'The employee has been saved.';
-                $response['employee'] = $employee;
-                $this->set(compact('response'));
-                return;
-            }
-            $response['message'] = 'The employee could not be saved. Please, try again.';
-            $response['error'] = true;
-            $this->set(compact('response'));
-            return;
-        }
-    }
-
     /**
      * Edit method
      *
@@ -146,15 +109,15 @@ class EmployeesController extends AppController
                     $limit = 10;
                 }
             $employees = $this->Employees->getEmployeeList($startDate, $endDate, $order, $searchTerm = null);
-                if (!$employees)  {
-                    $response['message'] = 'All fields must be fill';
-                    $this->set(compact('response'));
-                    return;
-                }
-                $response['error'] = false;
-                $config = [
-                    'limit' => $limit,
-                ];
+            if (!$employees)  {
+                $response['message'] = 'All fields must be fill';
+                $this->set(compact('response'));
+                return;
+            }
+            $response['error'] = false;
+            $config = [
+                'limit' => $limit,
+            ];
             $response['employees'] = $this->Paginator->paginate($employees, $config);
             $response['total'] = count($response['employees']);
             $this->set(compact('response'));

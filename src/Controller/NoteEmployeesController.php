@@ -15,17 +15,6 @@ class NoteEmployeesController extends AppController
      *
      * @return \Cake\Network\Response|null
      */
-    public function index()
-    {
-        $this->paginate = [
-            'contain' => ['Users', 'Employees']
-        ];
-        $noteEmployees = $this->paginate($this->NoteEmployees);
-
-        $this->set(compact('noteEmployees'));
-        $this->set('_serialize', ['noteEmployees']);
-    }
-
     /**
      * View method
      *
@@ -33,16 +22,6 @@ class NoteEmployeesController extends AppController
      * @return \Cake\Network\Response|null
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($id = null)
-    {
-        $noteEmployee = $this->NoteEmployees->get($id, [
-            'contain' => ['Users', 'Employees']
-        ]);
-
-        $this->set('noteEmployee', $noteEmployee);
-        $this->set('_serialize', ['noteEmployee']);
-    }
-
     /**
      * Add method
      *
@@ -126,14 +105,16 @@ class NoteEmployeesController extends AppController
           'message' => '',
           'error' => false
         ];
-        $noteEmployee = $this->NoteEmployees->get($id);
-        $this->request->allowMethod(['delete']);
-        if($noteEmployee->user_id == $this->Auth->user('id')) {
-            if ($this->NoteEmployees->delete($noteEmployee)) {
-                $response['message'] = 'The note employee has been deleted.';
-                $response['noteEmployee'] = $noteEmployee;
-                $this->set(compact('response'));
-                return;
+        if ($this->request->is(['put'])) {
+            $noteEmployee = $this->NoteEmployees->get($id);
+            if($noteEmployee->user_id == $this->Auth->user('id')) {
+                $noteEmployee->deleted = date('Y-m-d H:i:s');
+                if ($this->NoteEmployees->save($noteEmployee)) {
+                    $response['message'] = 'The note employee has been deleted.';
+                    $response['noteEmployee'] = $noteEmployee;
+                    $this->set(compact('response'));
+                    return;
+                }
             }
         }
         $response['error'] = true;
