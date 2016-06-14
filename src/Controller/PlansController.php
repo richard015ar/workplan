@@ -349,35 +349,35 @@ class PlansController extends AppController
             'message' => ''
         ];
         if($this->Auth->user('role') == 1){
-        if (!$this->request->is('get')) {
-            $response['message'] = 'Invalid request';
-            $this->set(compact('response'));
-            return;
-        }
-        $startDate = $this->request->query('startDate');
-        $endDate = $this->request->query('endDate');
-        $searchTerm = $this->request->query('searchTerm');
-        $order = $this->request->query('order');
-        $state = $this->request->query('state');
-        $limit = $this->request->query('limit');
-        if (!$limit) {
-            $limit = 10;
-        }
-        $plans = $this->Plans->getPlans($startDate, $endDate, $order, $searchTerm, $state);
-        if (!$plans)  {
-            $response['message'] = 'All fields must be fill';
-            $this->set(compact('response'));
-            return;
-        }
-        $response['error'] = false;
-        $config = [
-            'limit' => $limit,
-        ];
+            if (!$this->request->is('get')) {
+                $response['message'] = 'Invalid request';
+                $this->set(compact('response'));
+                return;
+            }
+            $startDate = $this->request->query('startDate');
+            $endDate = $this->request->query('endDate');
+            $searchTerm = $this->request->query('searchTerm');
+            $order = $this->request->query('order');
+            $state = $this->request->query('state');
+            $limit = $this->request->query('limit');
+            if (!$limit) {
+                $limit = 10;
+            }
+            $plans = $this->Plans->getPlans($startDate, $endDate, $order, $searchTerm, $state);
+            if (!$plans)  {
+                $response['message'] = 'All fields must be fill';
+                $this->set(compact('response'));
+                return;
+            }
+            $response['error'] = false;
+            $config = [
+                'limit' => $limit,
+            ];
 
-        $response['plans'] = $this->Paginator->paginate($plans, $config);
-        $response['total'] = count($response['plans']);
-        $this->set(compact('response'));
-        return;
+            $response['plans'] = $this->Paginator->paginate($plans, $config);
+            $response['total'] = count($response['plans']);
+            $this->set(compact('response'));
+            return;
         }
         $response['message'] = 'Invalid users';
         $this->set(compact('response'));

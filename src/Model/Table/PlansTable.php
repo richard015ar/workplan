@@ -156,13 +156,12 @@ class PlansTable extends Table
             return false;
         }
         if ($searchTerm != '' || !is_null($searchTerm)) {
-             $plans = $this->find()->matching('Items', function ($q) use($searchTerm) {
-                 return $q->where(['Items.description LIKE' => "%$searchTerm%"])
-                          ->select(['id','description', 'state', 'created'])
+             $plans = $this->find()->contain(['Items' => function ($q) use($searchTerm) {
+                 return $q->select(['id','description', 'state', 'created', 'employee_id'])
                           ->andWhere(function ($exp, $q) {
                               return $exp->isNull('Items.deleted');
                           });
-                      });
+                      }]);
                $plans = $plans->where(function ($exp, $q) use ($startDate, $endDate) {
                     return $exp->between('Plans.created', $startDate, $endDate);
                 })
@@ -173,13 +172,13 @@ class PlansTable extends Table
                 ->where(['Plans.state' => $state])
                 ->order(['Plans.created' => $order]);
         } else {
-               $plans = $this->find()->matching('Items', function ($q) {
-                   return $q->select(['id','description', 'state', 'created'])
-                            ->where(function ($exp, $q) {
-                                return $exp->isNull('Items.deleted');
-                            });
-                        })
-                ->select(['id', 'state', 'created'])
+               $plans = $this->find()
+                    ->contain(['Items' => function ($q) {
+                           return $q->where(function ($exp, $q) {
+                                        return $exp->isNull('Items.deleted');
+                                    });
+                        }])
+                ->select(['id', 'state', 'created', 'employee_id'])
                 ->where(function ($exp, $q) use ($startDate, $endDate){
                     return $exp->between('Plans.created', $startDate, $endDate);
                 })
