@@ -87,6 +87,7 @@ class UsersController extends AppController
         // Creating entities
         $employee = $this->Users->Employees->newEntity();
         $administrator = $this->Users->Administrators->newEntity();
+        $this->request->data['last_login'] = date('Y-m-d H:i:s');
         $user = $this->Users->patchEntity($user, $this->request->data);
         if ($this->Users->save($user)) {
             $response['user'] = $user;

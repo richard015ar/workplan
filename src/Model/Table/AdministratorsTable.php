@@ -81,10 +81,10 @@ class AdministratorsTable extends Table
                 return $exp->between('User.full_name', $startDate, $endDate);
             });
             $administrators = $administrators->where(['Administrators.user_id'])
-            ->order(['Users.full_name' => $order])
-            ->where(function ($exp, $q) {
-                return $exp->isNull('deleted');
-            })
+                ->order(['Users.full_name' => $order])
+                ->where(function ($exp, $q) {
+                    return $exp->isNull('deleted');
+                });
         } else {
             $administrators = $this->find()->contain(['Users'])
             ->where(function ($exp, $q) use ($startDate, $endDate){
@@ -94,7 +94,7 @@ class AdministratorsTable extends Table
             ->order(['Users.full_name' => $order])
             ->where(function ($exp, $q) {
                 return $exp->isNull('deleted');
-            })
+            });
         }
         return $administrators;
     }

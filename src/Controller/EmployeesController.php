@@ -108,7 +108,7 @@ class EmployeesController extends AppController
                 if (!$limit) {
                     $limit = 10;
                 }
-            $employees = $this->Employees->getEmployeeList($startDate, $endDate, $order, $searchTerm = null);
+            $employees = $this->Employees->getEmployeeList($startDate, $endDate, $order, $searchTerm);
             if (!$employees)  {
                 $response['message'] = 'All fields must be fill';
                 $this->set(compact('response'));
