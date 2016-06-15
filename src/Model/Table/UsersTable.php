@@ -147,7 +147,26 @@ class UsersTable extends Table
         return false;
     }
 
-    public function getSearch($search = null) {
+    public function getSearch($search = null, $deleted) {
+        $items = $this->Employees->Plans->Items->find()
+                    ->select(['id','description', 'state', 'created'])
+                    ->where(['description LIKE ' => "%$search%"]);
+        $notePlans = $this->NotePlans->find()
+                    ->select(['id', 'created','note'])
+                    ->where(['note LIKE ' => "%$search%"]);
+        $noteEmployees = $this->NoteEmployees->find()
+                    ->select(['id', 'created', 'note'])
+                    ->where(['note LIKE ' => "%$search%"]);
+        $noteItems = $this->NoteItems->find()
+                    ->select(['id', 'created','note'])
+                    ->where(['note LIKE ' => "%$search%"]);
+        $users = $this->find()
+                    ->select(['username', 'email', 'full_name'])
+                    ->where(['username LIKE ' => "%$search%"])
+                    ->orWhere(['email LIKE ' => "%$search%"])
+                    ->orWhere(['full_name LIKE ' => "%$search%"]);
+
+            if(!$deleted) {
         $items = $this->Employees->Plans->Items->find()
                     ->select(['id','description', 'state', 'created'])
                     ->where(function ($exp, $q) {
@@ -186,7 +205,7 @@ class UsersTable extends Table
                     ->where(function ($exp, $q) {
                         return $exp->isNull('deleted');
                     });
-
+                }
         return [
             'Items' => $items,
             'NotePlans' => $notePlans,

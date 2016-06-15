@@ -33,6 +33,7 @@ class AdministratorsController extends AppController
                 $this->set(compact('response'));
                 return;
             }
+            $deleted = $this->request->query('deleted');
             $startDate = $this->request->query('startDate');
             $endDate = $this->request->query('endDate');
             $searchTerm = $this->request->query('searchTerm');
@@ -41,7 +42,7 @@ class AdministratorsController extends AppController
                 if (!$limit) {
                     $limit = 10;
                 }
-            $administrators = $this->Administrators->getAdministratorList($startDate, $endDate, $order, $searchTerm = null);
+            $administrators = $this->Administrators->getAdministratorList($startDate, $endDate, $order, $searchTerm = null, $deleted);
                 if (!$administrators)  {
                     $response['message'] = 'All fields must be fill';
                     $this->set(compact('response'));

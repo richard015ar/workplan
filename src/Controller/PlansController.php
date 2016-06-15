@@ -282,6 +282,7 @@ class PlansController extends AppController
             $this->set(compact('response'));
             return;
         }
+        $deleted = $this->request->query('deleted');
         $startDate = $this->request->query('startDate');
         $endDate = $this->request->query('endDate');
         $searchTerm = $this->request->query('searchTerm');
@@ -291,7 +292,7 @@ class PlansController extends AppController
         if (!$limit) {
             $limit = 10;
         }
-        $plans = $this->Plans->getPlansByEmployeeId($startDate, $endDate, $order, $searchTerm, $employeeId);
+        $plans = $this->Plans->getPlansByEmployeeId($startDate, $endDate, $order, $searchTerm, $employeeId, $deleted);
         if (!$plans)  {
             $response['message'] = 'All fields must be fill';
             $this->set(compact('response'));
@@ -317,6 +318,7 @@ class PlansController extends AppController
             $this->set(compact('response'));
             return;
         }
+        $deleted = $this->request->query('deleted');
         $startDate = $this->request->query('startDate');
         $endDate = $this->request->query('endDate');
         $searchTerm = $this->request->query('searchTerm');
@@ -326,7 +328,7 @@ class PlansController extends AppController
         if (!$limit) {
             $limit = 10;
         }
-        $plans = $this->Plans->getPlansByEmployeeId($startDate, $endDate, $order, $searchTerm, $employeeId);
+        $plans = $this->Plans->getPlansByEmployeeId($startDate, $endDate, $order, $searchTerm, $employeeId, $deleted);
         if (!$plans)  {
             $response['message'] = 'All fields must be fill';
             $this->set(compact('response'));
@@ -354,6 +356,7 @@ class PlansController extends AppController
             $this->set(compact('response'));
             return;
         }
+        $deleted = $this->request->query('deleted');
         $startDate = $this->request->query('startDate');
         $endDate = $this->request->query('endDate');
         $searchTerm = $this->request->query('searchTerm');
@@ -363,7 +366,7 @@ class PlansController extends AppController
         if (!$limit) {
             $limit = 10;
         }
-        $plans = $this->Plans->getPlans($startDate, $endDate, $order, $searchTerm, $state);
+        $plans = $this->Plans->getPlans($startDate, $endDate, $order, $searchTerm, $state, $deleted);
         if (!$plans)  {
             $response['message'] = 'All fields must be fill';
             $this->set(compact('response'));

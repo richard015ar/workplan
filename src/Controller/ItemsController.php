@@ -136,7 +136,7 @@ class ItemsController extends AppController
             $this->set(compact('response'));
             return;
         }
-        //debug($this->paginate);die();
+        $deleted = $this->request->query('deleted');
         $startDate = $this->request->query('startDate');
         $endDate = $this->request->query('endDate');
         $searchTerm = $this->request->query('searchTerm');
@@ -147,7 +147,7 @@ class ItemsController extends AppController
         if (!$limit) {
             $limit = 10;
         }
-        $items = $this->Items->getItemsByEmployeeId($startDate, $endDate, $order, $stateItem, $searchTerm, $employeeId);
+        $items = $this->Items->getItemsByEmployeeId($startDate, $endDate, $order, $stateItem, $searchTerm, $employeeId, $deleted);
         if (!$items)  {
             $response['message'] = 'All fields must be fill';
             $this->set(compact('response'));

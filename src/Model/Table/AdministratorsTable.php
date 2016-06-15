@@ -65,7 +65,7 @@ class AdministratorsTable extends Table
         return $rules;
     }
 
-    public function getAdministratorList($startDate, $endDate, $order,  $searchTerm = null)
+    public function getAdministratorList($startDate, $endDate, $order,  $searchTerm = null, $deleted)
     {
         if (is_null($startDate) || is_null($endDate) || is_null($order)) {
             $response['message'] = 'All data must be filled';
@@ -81,20 +81,19 @@ class AdministratorsTable extends Table
                 return $exp->between('User.full_name', $startDate, $endDate);
             });
             $administrators = $administrators->where(['Administrators.user_id'])
-            ->order(['Users.full_name' => $order])
-            ->where(function ($exp, $q) {
-                return $exp->isNull('deleted');
-            })
+            ->order(['Users.full_name' => $order]);
         } else {
             $administrators = $this->find()->contain(['Users'])
             ->where(function ($exp, $q) use ($startDate, $endDate){
                 return $exp->between('Users.full_name', $startDate, $endDate);
             });
             $administrators = $administrators->where(['Administrators.user_id'])
-            ->order(['Users.full_name' => $order])
-            ->where(function ($exp, $q) {
+            ->order(['Users.full_name' => $order]);
+        }
+        if(!$deleted) {
+            $administrators = $administrators->where(function ($exp, $q) {
                 return $exp->isNull('deleted');
-            })
+            });
         }
         return $administrators;
     }

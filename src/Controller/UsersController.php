@@ -211,8 +211,9 @@ class UsersController extends AppController
         ];
         if($this->Auth->user('role') == 1) {
             if ($this->request->is('get')) {
+                $deleted = $this->request->query('deleted');
                 $search = $this->request->query('search');
-                $result = $this->Users->getSearch($search);
+                $result = $this->Users->getSearch($search, $deleted);
                 $response['error'] = false;
                 $response['Result'] = $result;
                 $this->set(compact('response'));

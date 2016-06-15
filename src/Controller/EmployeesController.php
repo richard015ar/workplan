@@ -100,6 +100,7 @@ class EmployeesController extends AppController
                 $this->set(compact('response'));
                 return;
             }
+            $deleted = $this->request->query('deleted');
             $startDate = $this->request->query('startDate');
             $endDate = $this->request->query('endDate');
             $searchTerm = $this->request->query('searchTerm');
@@ -108,7 +109,7 @@ class EmployeesController extends AppController
                 if (!$limit) {
                     $limit = 10;
                 }
-            $employees = $this->Employees->getEmployeeList($startDate, $endDate, $order, $searchTerm = null);
+            $employees = $this->Employees->getEmployeeList($startDate, $endDate, $order, $searchTerm = null, $deleted);
             if (!$employees)  {
                 $response['message'] = 'All fields must be fill';
                 $this->set(compact('response'));

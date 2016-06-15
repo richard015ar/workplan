@@ -90,7 +90,7 @@ class EmployeesTable extends Table
         return $employee[0]->id;
     }
 
-    public function getEmployeeList($startDate, $endDate, $order,  $searchTerm = null)
+    public function getEmployeeList($startDate, $endDate, $order,  $searchTerm = null, $deleted)
     {
         if (is_null($startDate) || is_null($endDate) || is_null($order)) {
             $response['message'] = 'All data must be filled';
@@ -102,9 +102,6 @@ class EmployeesTable extends Table
                     return $q->where(['User.full_name LIKE' => "%$searchTerm%"]);
                 }
             ]);
-            $employee = $employee->where(function ($exp, $q) {
-                return $exp->isNull('Users.deleted');
-            });
             $employee = $employee->where(function ($exp, $q) use ($startDate, $endDate) {
                 return $exp->between('User.created', $startDate, $endDate);
             });
@@ -118,8 +115,10 @@ class EmployeesTable extends Table
             });
             $employee = $employee->where(['Employees.user_id'])
             ->select(['Employees.id', 'Users.full_name', 'Users.username', 'Users.id', 'Users.created', 'Users.email'])
-            ->order(['Users.full_name' => $order])
-            ->andWhere(function ($exp, $q) {
+            ->order(['Users.full_name' => $order]);
+        }
+        if(!$deleted) {
+            $employee = $employee->where(function ($exp, $q) {
                 return $exp->isNull('Users.deleted');
             });
         }
