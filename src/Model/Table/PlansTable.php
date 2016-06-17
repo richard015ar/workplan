@@ -95,29 +95,27 @@ class PlansTable extends Table
             return false;
         }
         if ($searchTerm != '' || !is_null($searchTerm)) {
-                $plans = $this->find()->contain(['Items', 'Items.NoteItems'])->matching(
-                    'Items' , function ($q) use($searchTerm){
-                      return $q->where(['Items.description LIKE' => "%$searchTerm%"]);
-                                                            });
-                $plans = $plans->contain(['Items.NoteItems', 'NotePlans', 'Items']);
-                $plans = $plans->where([
-                    'Plans.employee_id' => $employeeId
-                                        ])
-                                ->select(['id', 'state', 'created']);
-
-                $plans = $plans->where(function ($exp, $q) use ($startDate, $endDate) {
+                $plans = $this->find()
+                ->contain(['Items.NoteItems', 'NotePlans', 'Items'])
+                ->matching('Items', function ($q) use($searchTerm) {
+                    return $q->where(['Items.description LIKE' => "%$searchTerm%"]);
+                }
+            );
+                $plans = $plans->where(function ($exp, $q) use ($startDate, $endDate){
                     return $exp->between('Plans.created', $startDate, $endDate);
-                                })
-                               ->order(['Plans.created' => $order]);
+                });
+                $plans = $plans->select(['id', 'state', 'created']);
+                $plans = $plans->where(['Plans.employee_id' => $employeeId]);
+                $plans = $plans->order(['Plans.created' => $order]);
         } else {
                 $plans = $this->find();
                 $plans = $plans->contain(['Items.NoteItems', 'NotePlans', 'Items']);
                 $plans = $plans->where(function ($exp, $q) use ($startDate, $endDate){
                     return $exp->between('Plans.created', $startDate, $endDate);
-                                })
-                               ->select(['id', 'state', 'created'])
-                               ->andWhere(['Plans.employee_id' => $employeeId])
-                               ->order(['Plans.created' => $order]);
+                });
+                $plans = $plans->select(['id', 'state', 'created']);
+                $plans = $plans->where(['Plans.employee_id' => $employeeId]);
+                $plans = $plans->order(['Plans.created' => $order]);
                            }
         if(!$deleted) {
                 $plans = $plans->contain(['Items.NoteItems' => function ($q) {
@@ -128,63 +126,63 @@ class PlansTable extends Table
                         ]);
                 $plans = $plans->contain(['NotePlans' => function ($q) {
                       return $q->where(function ($exp, $q) {
-                    return $exp->isNull('deleted');
+                    return $exp->isNull('NotePlans.deleted');
                             });
                         }
                     ]);
                 $plans = $plans->contain(['Items' => function ($q) {
                       return $q->where(function ($exp, $q) {
-                    return $exp->isNull('deleted');
+                    return $exp->isNull('Items.deleted');
                             });
                         }
-                    ])
-                               ->where(function ($exp, $q) {
+                    ]);
+                $plans = $plans->where(function ($exp, $q) {
                     return $exp->isNull('Plans.deleted');
                                 });
                       }
                       return $plans;
     }
 
-    public function getPlans($startDate, $endDate, $order, $searchTerm = null, $deleted, $state)
+    public function getPlans($startDate, $endDate, $order, $searchTerm = null, $deleted, $state = null)
     {
-        if (is_null($startDate) || is_null($endDate) || is_null($order) || is_null($state)) {
+        if (is_null($startDate) || is_null($endDate) || is_null($order)) {
             $response['message'] = 'All data must be filled';
             return false;
         }
         if ($searchTerm != '' || !is_null($searchTerm)) {
-             $plans = $this->find()->matching('Items', function ($q) use($searchTerm) {
-                  return $q->where(['Items.description LIKE' => "%$searchTerm%"])
-                           ->select(['id','description', 'state', 'created']);
-                           });
-             $plans = $plans->where(function ($exp, $q) use ($startDate, $endDate) {
-                 return $exp->between('Plans.created', $startDate, $endDate);
-                            })
-                            ->select(['id', 'state', 'created'])
-                            ->where(['Plans.state' => $state])
-                            ->order(['Plans.created' => $order]);
+                $plans = $this->find()
+                                ->contain(['Items'])
+                                ->matching(
+                                    'Items',
+                                    function ($q) use($searchTerm) {
+                                    	return $q->where(['Items.description LIKE' => "%$searchTerm%"]);
+                                    }
+                                );
+                $plans = $plans->where(function ($exp, $q) use ($startDate, $endDate){
+                    return $exp->between('Plans.created', $startDate, $endDate);
+                });
+                $plans = $plans->select(['id', 'state', 'created']);
+                $plans = $plans->order(['Plans.created' => $order]);
         } else {
-             $plans = $this->find()->matching('Items', function ($q) {
-                  return $q->select(['id','description', 'state', 'created']);
-                        })
-                            ->select(['id', 'state', 'created'])
-                            ->where(function ($exp, $q) use ($startDate, $endDate){
-                 return $exp->between('Plans.created', $startDate, $endDate);
-                                    })
-                            ->where(['Plans.state' => $state])
-                            ->order(['Plans.created' => $order]);
+                $plans = $this->find()->contain(['Items']);
+                $plans = $plans->where(function ($exp, $q) use ($startDate, $endDate){
+                    return $exp->between('Plans.created', $startDate, $endDate);
+                });
+                $plans = $plans->select(['id', 'state', 'created']);
+                $plans = $plans->order(['Plans.created' => $order]);
+            }
+        if(!$deleted) {
+            $plans = $plans->where(function ($exp, $q) {
+                        return $exp->isNull('Plans.deleted');
+                    });
         }
-        if(!$deleted){
-              $plans = $this->find()->matching('Items', function ($q) {
-                   return $q->select(['id','description', 'state', 'created'])
-                            ->where(function ($exp, $q) {
-                  return $exp->isNull('Items.deleted');
-                            });
-                        })
-                            ->where(function ($exp, $q) {
-                return $exp->isNull('Plans.deleted');
-                            });
-                      }
-               return $plans;
+        if (!is_null($state)) {
+            $state = intval($state);
+            $plans = $plans->where(['Plans.state' => $state]);
+            $plans = $plans->select(['id', 'state', 'created']);
+        }
+       return $plans;
+
     }
 //It function find open plans of logged user.
     public function getPlanOpenByEmployee($employeeId) {

@@ -147,7 +147,7 @@ class ItemsController extends AppController
         if (!$limit) {
             $limit = 10;
         }
-        $items = $this->Items->getItemsByEmployeeId($startDate, $endDate, $order, $stateItem, $searchTerm, $employeeId, $deleted);
+        $items = $this->Items->getItemsByEmployeeId($startDate, $endDate, $order, $employeeId, $searchTerm,  $deleted, $stateItem);
         if (!$items)  {
             $response['message'] = 'All fields must be fill';
             $this->set(compact('response'));

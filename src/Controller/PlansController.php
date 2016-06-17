@@ -366,21 +366,20 @@ class PlansController extends AppController
         if (!$limit) {
             $limit = 10;
         }
-        $plans = $this->Plans->getPlans($startDate, $endDate, $order, $searchTerm, $state, $deleted);
-        if (!$plans)  {
-            $response['message'] = 'All fields must be fill';
+        $plans = $this->Plans->getPlans($startDate, $endDate, $order, $searchTerm, $deleted, $state);
+            if (!$plans)  {
+                $response['message'] = 'All fields must be fill';
+                $this->set(compact('response'));
+                return;
+            }
+            $response['error'] = false;
+            $config = [
+                'limit' => $limit,
+            ];
+            $response['plans'] = $this->Paginator->paginate($plans, $config);
+            $response['total'] = count($response['plans']);
             $this->set(compact('response'));
             return;
-        }
-        $response['error'] = false;
-        $config = [
-            'limit' => $limit,
-        ];
-
-        $response['plans'] = $this->Paginator->paginate($plans, $config);
-        $response['total'] = count($response['plans']);
-        $this->set(compact('response'));
-        return;
         }
         $response['message'] = 'Invalid users';
         $this->set(compact('response'));

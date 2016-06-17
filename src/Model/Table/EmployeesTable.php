@@ -95,27 +95,25 @@ class EmployeesTable extends Table
         if (is_null($startDate) || is_null($endDate) || is_null($order)) {
             $response['message'] = 'All data must be filled';
             return false;
-        }
+        } 
         if ($searchTerm != '' || !is_null($searchTerm)) {
-            $employee = $this->find()->contain([
-                'Users' => function ($q) use($searchTerm){
-                    return $q->where(['User.full_name LIKE' => "%$searchTerm%"]);
-                }
-            ]);
-            $employee = $employee->where(function ($exp, $q) use ($startDate, $endDate) {
-                return $exp->between('User.created', $startDate, $endDate);
+            $employee = $this->find()->matching('Users' , function ($q) use($searchTerm){
+                return $q->where(['Users.full_name LIKE' => "%$searchTerm%"]);
             });
-            $employee = $employee->where(['Employees.user_id'])
-            ->select(['Employees.id', 'Users.full_name', 'Users.username', 'Users.id', 'Users.created', 'Users.email'])
-            ->order(['Users.full_name' => $order]);
-        } else {
-            $employee = $this->find()->contain(['Users'])
-            ->where(function ($exp, $q) use ($startDate, $endDate){
+            $employee = $employee->where(function ($exp, $q) use ($startDate, $endDate){
                 return $exp->between('Users.created', $startDate, $endDate);
             });
-            $employee = $employee->where(['Employees.user_id'])
-            ->select(['Employees.id', 'Users.full_name', 'Users.username', 'Users.id', 'Users.created', 'Users.email'])
-            ->order(['Users.full_name' => $order]);
+            $employee = $employee->where(['Employees.user_id']);
+            $employee = $employee->select(['Employees.id', 'Users.full_name', 'Users.username', 'Users.id', 'Users.created', 'Users.email']);
+            $employee = $employee->order(['Users.full_name' => $order]);
+        } else {
+            $employee = $this->find()->contain(['Users']);
+            $employee = $employee->where(function ($exp, $q) use ($startDate, $endDate){
+                return $exp->between('Users.created', $startDate, $endDate);
+            });
+            $employee = $employee->where(['Employees.user_id']);
+            $employee = $employee->select(['Employees.id', 'Users.full_name', 'Users.username', 'Users.id', 'Users.created', 'Users.email']);
+            $employee = $employee->order(['Users.full_name' => $order]);
         }
         if(!$deleted) {
             $employee = $employee->where(function ($exp, $q) {
